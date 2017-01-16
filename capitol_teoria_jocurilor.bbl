@@ -1,0 +1,156 @@
+\begin{thebibliography}{10}
+
+\bibitem{Shoham}
+K.~L.-B. Yoav~Shoham, {\em MULTIAGENT SYSTEMS: Algorithmic, Game-Theoretic, and
+  Logical Foundations}.
+\newblock 2009.
+
+\bibitem{allis}
+L.~V. Allis, {\em Searching for Solutions in Games and Artificial
+  Intelligence}.
+\newblock PhD thesis, University of Limburg, Maastricht, 1994.
+
+\bibitem{Shannon}
+C.~Shannon, ``Programming a computer for playing chess,'' in {\em Philosophical
+  Magazine}, 1949.
+
+\bibitem{deepblue}
+A.~J. H.~J. Feng-hsiung Hsu, Murray~Champbell, ``Deep blue,'' tech. rep.,
+  Compaq, IBM Watson Research Center, Sandbridge Technologies, 2001.
+
+\bibitem{logistello}
+M.~Buro, ``Takeshi murakami vs. logistello,'' tech. rep., NEC Research
+  Institute, 1997.
+
+\bibitem{man_vs_machine}
+M.~Buro, ``The iwec-2002 man-machine othello match,'' tech. rep., University of
+  Alberta, 2002.
+
+\bibitem{othello_fang}
+R.~Fang, {\em Othello: From Beginner to Master}.
+\newblock 2003.
+
+\bibitem{othello_master}
+B.~Rose, {\em Othello: A minute to learn... A lifetime to master.}
+\newblock 2005.
+
+\bibitem{turocy}
+B.~v.~S. Theodore L.~Turocy, ``Game theory,'' tech. rep., CDAM Research Report,
+  2001.
+
+\bibitem{osborne}
+M.~J. Osborne, {\em An Introduction to Game Theory}.
+\newblock Oxford University Press, 2002.
+
+\bibitem{Giumale}
+C.~A. Giumale, {\em Introducere în Analiza Algoritmilor}.
+\newblock POLIROM, 2004.
+
+\bibitem{pathological}
+D.~S. Nau, ``On game graph structure and its influence on pathology,'' {\em
+  Computer and Information Sciences}, 1983.
+
+\bibitem{sheng_hsu}
+T.~sheng Hsu, ``An analysis of alpha-beta pruning by d.e knuth and r.w moore,''
+  11 2008.
+
+\bibitem{games_solved_herik}
+J.~v.~R. H.~Jaap van~den Herik, Jos W.H.M.~Uiterwijk, ``Games solved: Now and
+  in the future,'' {\em Artificial Intelligence}, 2002.
+
+\bibitem{mcAllester}
+D.~McAllester, ``Game search,'' {\em Artificial Intelligence}, 1992.
+
+\bibitem{Rivest}
+R.~L. Rivest, ``Game tree searching by min/max approximation,'' tech. rep., MIT
+  Laboratory for Computer Science, 1995.
+
+\bibitem{brokington}
+M.~G. Brockington, {\em Asynchronous Parallel Game-Tree Search}.
+\newblock PhD thesis, University of Alberta, 1998.
+
+\bibitem{dana_nau_game_tree_search}
+D.~S. Nau, ``Game tree search,'' 02 2009.
+
+\bibitem{buro_mpc_curs}
+M.~Buro, ``Multi-probecut search,'' 2002.
+
+\bibitem{buro_mpc}
+M.~Buro, ``An effective selective extension of the $\alpha \beta$ algorithm,''
+  tech. rep., ICCA Journal, 1995.
+
+\bibitem{Synthesis_arithmetic_circuits}
+J.-P. Deschamps, {\em Synthesis of Arithmetic Circuits: FPGA, ASIC and Embedded
+  Systems}.
+\newblock John Wiley \& Sons, 2006.
+
+\bibitem{xilinx_ug331}
+Xilinx, {\em Spartan-3 Generation FPGA User Guide}, 2009.
+
+\bibitem{xilinx_spartan_datasheet}
+Xilinx, {\em Spartan-3 FPGA Family Data Sheet}, 2008.
+
+\bibitem{spartan_starter_kit}
+Xilinx, {\em Spartan-3E Starter Kit Board User Guide}, 2006.
+
+\bibitem{peter_verilog}
+P.~M. Nyasulu, {\em Introduction to Verilog}.
+\newblock 2001.
+
+\bibitem{high_performance_fpga}
+N.~A. Kartik Subramanian~Iyer, {\em High Performance FPGA Designs}.
+\newblock 2006.
+
+\bibitem{jack_marshall}
+J.~Marshall, {\em RTL Coding and Optimization Guide for use with Design
+  Compiler}.
+\newblock 2002.
+
+\bibitem{xilinx_coding_practices}
+P.~Garrault and B.~Philofsky, {\em HDL Coding Practices to Accelerate Design
+  Performance}, 2006.
+
+\bibitem{xilinx_xst}
+Xilinx, {\em XST User Guide}, 2005.
+
+\bibitem{vga_timings}
+{\em VGA Signal 640 x 480 @ 60 Hz Industry standard timing}.
+\newblock http://microvga.com/vga-timing/640x480@60Hz.
+
+\bibitem{epanorama}
+{\em VGA timing information}.
+\newblock http://www.epanorama.net/documents/pc/vga\_timing.html.
+
+\bibitem{fpga4fun}
+{\em FPGA for Fun: Serial interface (RS-232)}.
+\newblock http://www.fpga4fun.com/.
+
+\bibitem{knuth}
+D.~E. Knuth, {\em The Art of Computer Programming}, vol.~4.
+\newblock Addison-Wesley, 2008.
+
+\bibitem{cormen}
+T.~H. Cormen, C.~E. Leiserson, and R.~L. Rivest, {\em Introduction to
+  Algorithms}.
+\newblock MIT Press and McGraw-Hill, 2001.
+
+\bibitem{hwang}
+K.~Hwang, {\em Computer Arithmetic: Principles, Architecture, and Design}.
+\newblock John Wiley \& Sons, 1979.
+
+\bibitem{intel_sse4}
+Intel, {\em Intel SSE4 Programming Reference}, 2007.
+
+\bibitem{buro}
+M.~Buro, ``Statistical feature combination for the evaluation of game
+  positions,'' tech. rep., NEC Research Institute, 1995.
+
+\bibitem{buro_learning}
+M.~Buro, ``Improving heuristic mini-max search by supervised learning,'' tech.
+  rep., NEC Research Institute, 2001.
+
+\bibitem{buro_opening}
+M.~Buro, ``Toward opening book learning,'' tech. rep., NEC Research Institute,
+  1999.
+
+\end{thebibliography}

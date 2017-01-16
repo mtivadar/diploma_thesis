@@ -1,0 +1,194 @@
+\select@language {romanian}
+\contentsline {chapter}{\numberline {1}Introducere}{7}
+\contentsline {section}{\numberline {1.1}Tema Proiectului}{8}
+\contentsline {chapter}{\numberline {2}Jocul Reversi}{9}
+\contentsline {section}{\numberline {2.1}Istoric}{9}
+\contentsline {section}{\numberline {2.2}Regulile jocului}{9}
+\contentsline {subsection}{\numberline {2.2.1}Nota\IeC {{\textcommabelow t}}ia}{9}
+\contentsline {subsection}{\numberline {2.2.2}Reguli}{9}
+\contentsline {section}{\numberline {2.3}Particularit\IeC {\u a}\IeC {{\textcommabelow t}}i, principii}{11}
+\contentsline {subsection}{\numberline {2.3.1}Col\IeC {{\textcommabelow t}}urile}{11}
+\contentsline {subsection}{\numberline {2.3.2}Concepte intermediare}{11}
+\contentsline {subsubsection}{Zugzwang}{12}
+\contentsline {subsubsection}{Mobilitatea}{12}
+\contentsline {subsection}{\numberline {2.3.3}Fazele jocului}{12}
+\contentsline {chapter}{\numberline {3}Fundamente teoretice pentru jocul Reversi}{13}
+\contentsline {section}{\numberline {3.1}No\IeC {{\textcommabelow t}}iuni de Teoria Jocurilor}{13}
+\contentsline {subsection}{\numberline {3.1.1}Informa\IeC {{\textcommabelow t}}ia perfect\IeC {\u a}}{14}
+\contentsline {subsubsection}{Strategia optim\IeC {\u a}}{14}
+\contentsline {subsubsection}{Evaluarea st\IeC {\u a}rii jocului}{15}
+\contentsline {subsubsection}{Joc perfect}{15}
+\contentsline {subsection}{\numberline {3.1.2}Istoric}{15}
+\contentsline {section}{\numberline {3.2}Teoria jocurilor combinatorial\IeC {\u a}}{16}
+\contentsline {section}{\numberline {3.3}Arbori AND-OR}{16}
+\contentsline {section}{\numberline {3.4}Arbori de joc}{17}
+\contentsline {section}{\numberline {3.5}Numerotarea nodurilor}{17}
+\contentsline {section}{\numberline {3.6}Metode de rezolvare a jocurilor}{18}
+\contentsline {subsection}{\numberline {3.6.1}Metode bazate pe for\IeC {{\textcommabelow t}}\IeC {\u a} brut\IeC {\u a}}{18}
+\contentsline {subsubsection}{Analiza retrograd\IeC {\u a}}{18}
+\contentsline {subsection}{\numberline {3.6.2}Metode bazate pe baz\IeC {\u a} de cuno\IeC {{\textcommabelow s}}tiin\IeC {{\textcommabelow t}}e}{19}
+\contentsline {section}{\numberline {3.7}Explorarea MINMAX}{19}
+\contentsline {subsubsection}{Jocurile cu \IeC {{\textcommabelow s}}ans\IeC {\u a}}{20}
+\contentsline {section}{\numberline {3.8}T\IeC {\u a}iere $\alpha \beta $}{21}
+\contentsline {section}{\numberline {3.9}\IeC {\^I}mbun\IeC {\u a}t\IeC {\u a}\IeC {{\textcommabelow t}}iri ale algoritmului $\alpha \beta $}{24}
+\contentsline {subsection}{\numberline {3.9.1}Ad\IeC {\^a}ncire iterativ\IeC {\u a}}{24}
+\contentsline {subsection}{\numberline {3.9.2}Tehnici bazate pe ordonarea mut\IeC {\u a}rilor}{24}
+\contentsline {subsubsection}{Ordonarea static\IeC {\u a}}{24}
+\contentsline {subsubsection}{Tabele de transpozi\IeC {{\textcommabelow t}}ie}{25}
+\contentsline {subsection}{\numberline {3.9.3}Fereastr\IeC {\u a} de c\IeC {\u a}utare nul\IeC {\u a}}{25}
+\contentsline {subsection}{\numberline {3.9.4}C\IeC {\u a}utare selectiv\IeC {\u a}}{26}
+\contentsline {chapter}{\numberline {4}Analiza jocului Reversi}{27}
+\contentsline {section}{\numberline {4.1}Rezolvarea jocurilor}{27}
+\contentsline {subsubsection}{Jocuri rezolvate \emph {ultra-u\IeC {{\textcommabelow s}}or}}{27}
+\contentsline {subsubsection}{Jocuri rezolvate \emph {u\IeC {{\textcommabelow s}}or}}{27}
+\contentsline {subsubsection}{Jocuri rezolvate \emph {puternic}}{27}
+\contentsline {section}{\numberline {4.2}Tipul jocului}{27}
+\contentsline {subsection}{\numberline {4.2.1}Jocurile convergente}{28}
+\contentsline {subsection}{\numberline {4.2.2}Jocurile divergente}{28}
+\contentsline {section}{\numberline {4.3}Complexitatea}{28}
+\contentsline {subsection}{\numberline {4.3.1}Complexitatea pentru spa\IeC {{\textcommabelow t}}iul st\IeC {\u a}rilor}{28}
+\contentsline {subsection}{\numberline {4.3.2}Complexitatea arborelui de joc}{28}
+\contentsline {section}{\numberline {4.4}Determinarea complexit\IeC {\u a}\IeC {{\textcommabelow t}}ii prin analiz\IeC {\u a}\\ \hbox {\IeC {\quotedblbase }Monte Carlo\IeC {\textquotedblright }}}{29}
+\contentsline {chapter}{\numberline {5}Placa de dezvoltare Spartan3E}{31}
+\contentsline {section}{\numberline {5.1}Logic\IeC {\u a} programabil\IeC {\u a}, FPGA}{31}
+\contentsline {subsection}{\numberline {5.1.1}Scurt\IeC {\u a} descriere}{31}
+\contentsline {subsection}{\numberline {5.1.2}Arhitectura FPGA}{31}
+\contentsline {subsubsection}{Programarea}{31}
+\contentsline {subsubsection}{Look-Up Table}{32}
+\contentsline {subsubsection}{Bloc logic}{32}
+\contentsline {subsubsection}{Resurse FPGA Xilinx}{32}
+\contentsline {subsubsection}{Slice-urile}{32}
+\contentsline {subsubsection}{Elementele de stocare}{33}
+\contentsline {subsubsection}{Resurse aritmetice}{33}
+\contentsline {subsection}{\numberline {5.1.3}BRAM}{33}
+\contentsline {section}{\numberline {5.2}Spartan3E}{33}
+\contentsline {chapter}{\numberline {6}Proiectare hardware}{35}
+\contentsline {section}{\numberline {6.1}HDL, Verilog, scurt\IeC {\u a} introducere}{35}
+\contentsline {section}{\numberline {6.2}Paradigme de proiectare}{35}
+\contentsline {subsection}{\numberline {6.2.1}Identificarea blocurilor critice}{36}
+\contentsline {subsection}{\numberline {6.2.2}Memorarea ie\IeC {{\textcommabelow s}}irilor}{36}
+\contentsline {subsection}{\numberline {6.2.3}Semnale de ceas, reset}{36}
+\contentsline {subsubsection}{Semnalul de reset sincron}{36}
+\contentsline {subsubsection}{Semnalul de sincronizare}{36}
+\contentsline {subsection}{\numberline {6.2.4}Sumatoare arborescente sau \IeC {\^\i }nl\IeC {\u a}n\IeC {{\textcommabelow t}}uite}{36}
+\contentsline {subsection}{\numberline {6.2.5}Evitarea latch-urilor}{37}
+\contentsline {section}{\numberline {6.3}XST, Macro-uri}{37}
+\contentsline {chapter}{\numberline {7}Descrierea proiect\IeC {\u a}rii hardware}{39}
+\contentsline {section}{\numberline {7.1}Informa\IeC {{\textcommabelow t}}ii generale despre designul\\ \unhbox \voidb@x \hbox {hardware}}{39}
+\contentsline {subsection}{\numberline {7.1.1}Reprezentarea logic\IeC {\u a} a tablei de joc}{39}
+\contentsline {subsection}{\numberline {7.1.2}Leagea lui Amdahl}{40}
+\contentsline {subsection}{\numberline {7.1.3}Modul de proiectare}{40}
+\contentsline {section}{\numberline {7.2}Modulul de generare a mut\IeC {\u a}rilor valide}{40}
+\contentsline {subsection}{\numberline {7.2.1}Observa\IeC {{\textcommabelow t}}ii}{40}
+\contentsline {subsection}{\numberline {7.2.2}Expresiile logice pentru o mutare valid\IeC {\u a}}{41}
+\contentsline {subsection}{\numberline {7.2.3}Descrierea modulului}{42}
+\contentsline {subsubsection}{Denumire}{42}
+\contentsline {subsubsection}{Dependin\IeC {{\textcommabelow t}}e}{42}
+\contentsline {subsubsection}{Intr\IeC {\u a}ri}{42}
+\contentsline {subsubsection}{Ie\IeC {{\textcommabelow s}}iri}{42}
+\contentsline {subsection}{\numberline {7.2.4}Detalii de implementare}{43}
+\contentsline {subsubsection}{Partea secven\IeC {{\textcommabelow t}}ial\IeC {\u a} a modulului:}{43}
+\contentsline {subsubsection}{Partea combina\IeC {{\textcommabelow t}}ional\IeC {\u a} a modulului}{44}
+\contentsline {subsubsection}{Schema intern\IeC {\u a}}{45}
+\contentsline {subsection}{\numberline {7.2.5}Observa\IeC {{\textcommabelow t}}ii}{46}
+\contentsline {subsection}{\numberline {7.2.6}Concluzii}{46}
+\contentsline {section}{\numberline {7.3}Modulul de tranzi\IeC {{\textcommabelow t}}ionare \IeC {\^\i }ntre st\IeC {\u a}ri}{46}
+\contentsline {subsection}{\numberline {7.3.1}Metoda gre\IeC {{\textcommabelow s}}it\IeC {\u a}}{47}
+\contentsline {subsection}{\numberline {7.3.2}Implementarea corect\IeC {\u a}}{48}
+\contentsline {subsection}{\numberline {7.3.3}Descrierea modulului}{48}
+\contentsline {subsubsection}{Denumire}{48}
+\contentsline {subsubsection}{Dependin\IeC {{\textcommabelow t}}e}{48}
+\contentsline {subsubsection}{Intr\IeC {\u a}ri}{48}
+\contentsline {subsubsection}{Ie\IeC {{\textcommabelow s}}iri}{49}
+\contentsline {subsection}{\numberline {7.3.4}Detalii de implementare}{49}
+\contentsline {subsubsection}{Defini\IeC {{\textcommabelow t}}ia unei celule. (modulul \emph {move\_cell})}{49}
+\contentsline {subsubsection}{Intr\IeC {\u a}ri}{50}
+\contentsline {subsubsection}{Ie\IeC {{\textcommabelow s}}iri}{50}
+\contentsline {subsubsection}{Schema bloc}{50}
+\contentsline {subsubsection}{Modulul \emph {b\_move}}{52}
+\contentsline {subsubsection}{Definirea celulelor}{52}
+\contentsline {subsubsection}{Procesul combina\IeC {{\textcommabelow t}}ional}{53}
+\contentsline {subsection}{\numberline {7.3.5}Concluzii}{54}
+\contentsline {section}{\numberline {7.4}Controlerul VGA}{54}
+\contentsline {subsection}{\numberline {7.4.1}Generatorul de semnale H/V}{54}
+\contentsline {subsubsection}{Schema bloc pentru modulul \emph {hvsync\_gen}}{55}
+\contentsline {subsubsection}{Intr\IeC {\u a}ri}{55}
+\contentsline {subsubsection}{Ie\IeC {{\textcommabelow s}}iri}{55}
+\contentsline {subsection}{\numberline {7.4.2}Detalii de implementare}{55}
+\contentsline {subsubsection}{Informa\IeC {{\textcommabelow t}}iile generale}{55}
+\contentsline {subsubsection}{Informa\IeC {{\textcommabelow t}}iile de timp pentru orizontal\IeC {\u a}}{56}
+\contentsline {subsubsection}{Informa\IeC {{\textcommabelow t}}iile de timp pentru vertical\IeC {\u a}}{56}
+\contentsline {subsection}{\numberline {7.4.3}Detalii de implementare pentru modulul \emph {vga\_controller}}{56}
+\contentsline {subsubsection}{Dependin\IeC {{\textcommabelow t}}e}{56}
+\contentsline {subsubsection}{Schema bloc}{56}
+\contentsline {subsubsection}{Intr\IeC {\u a}ri}{56}
+\contentsline {subsubsection}{Ie\IeC {{\textcommabelow s}}iri}{57}
+\contentsline {subsection}{\numberline {7.4.4}Concluzii}{58}
+\contentsline {section}{\numberline {7.5}Miniclaviatura}{58}
+\contentsline {subsection}{\numberline {7.5.1}Descrierea modulului}{58}
+\contentsline {subsubsection}{Schema bloc}{58}
+\contentsline {subsubsection}{Intr\IeC {\u a}ri}{58}
+\contentsline {subsubsection}{Ie\IeC {{\textcommabelow s}}iri}{59}
+\contentsline {subsection}{\numberline {7.5.2}Detalii de implementare}{59}
+\contentsline {subsection}{\numberline {7.5.3}Concluzii}{60}
+\contentsline {section}{\numberline {7.6}Modulul pentru transmitere serial\IeC {\u a}}{60}
+\contentsline {section}{\numberline {7.7}Transmiterea serial\IeC {\u a} a unui num\IeC {\u a}r $32$ bi\IeC {{\textcommabelow t}}i, \IeC {\^\i }n format ASCII}{60}
+\contentsline {subsection}{\numberline {7.7.1}Descrierea modulului}{61}
+\contentsline {subsubsection}{Dependin\IeC {{\textcommabelow t}}e}{61}
+\contentsline {subsubsection}{Schema bloc}{61}
+\contentsline {subsubsection}{Intr\IeC {\u a}ri}{61}
+\contentsline {subsubsection}{Ie\IeC {{\textcommabelow s}}iri}{61}
+\contentsline {subsection}{\numberline {7.7.2}Detalii de implementare}{61}
+\contentsline {subsubsection}{Automatul finit}{62}
+\contentsline {subsection}{\numberline {7.7.3}Concluzii}{63}
+\contentsline {section}{\numberline {7.8}Modulul de explorare}{63}
+\contentsline {subsection}{\numberline {7.8.1}Descrierea modulului}{64}
+\contentsline {subsubsection}{Denumire}{64}
+\contentsline {subsubsection}{Dependin\IeC {{\textcommabelow t}}e}{64}
+\contentsline {subsubsection}{Schema bloc}{65}
+\contentsline {subsubsection}{Intr\IeC {\u a}ri}{65}
+\contentsline {subsubsection}{Ie\IeC {{\textcommabelow s}}iri}{65}
+\contentsline {subsection}{\numberline {7.8.2}Detalii de implementare}{66}
+\contentsline {subsection}{\numberline {7.8.3}Concluzii}{72}
+\contentsline {section}{\numberline {7.9}Modulul de memorie}{73}
+\contentsline {subsection}{\numberline {7.9.1}Descrierea modulului}{73}
+\contentsline {subsubsection}{Schema bloc}{73}
+\contentsline {subsubsection}{Intr\IeC {\u a}ri}{73}
+\contentsline {subsubsection}{Ie\IeC {{\textcommabelow s}}iri}{73}
+\contentsline {subsection}{\numberline {7.9.2}Detalii de implementare}{73}
+\contentsline {subsubsection}{Reprezentarea datelor}{74}
+\contentsline {subsection}{\numberline {7.9.3}Concluzii}{74}
+\contentsline {section}{\numberline {7.10}Num\IeC {\u a}rarea discurilor}{74}
+\contentsline {subsection}{\numberline {7.10.1}Descrierea modulului}{75}
+\contentsline {subsubsection}{Schema bloc}{75}
+\contentsline {subsubsection}{Intr\IeC {\u a}ri}{75}
+\contentsline {subsubsection}{Ie\IeC {{\textcommabelow s}}iri}{75}
+\contentsline {subsection}{\numberline {7.10.2}Detalii de implementare}{75}
+\contentsline {subsubsection}{Metoda naiv\IeC {\u a}}{76}
+\contentsline {subsubsection}{Metoda paralel\IeC {\u a}}{76}
+\contentsline {subsection}{\numberline {7.10.3}Concluzii}{76}
+\contentsline {section}{\numberline {7.11}Euristica}{77}
+\contentsline {subsection}{\numberline {7.11.1}Descrierea modulului}{77}
+\contentsline {subsubsection}{Denumire}{77}
+\contentsline {subsubsection}{Schema bloc}{77}
+\contentsline {subsubsection}{Intr\IeC {\u a}ri}{77}
+\contentsline {subsubsection}{Ie\IeC {{\textcommabelow s}}iri}{78}
+\contentsline {subsection}{\numberline {7.11.2}Detalii de implementare}{78}
+\contentsline {subsubsection}{Calcularea $x_{i}$}{79}
+\contentsline {subsubsection}{\IeC {\^I}nsumarea scorurilor}{79}
+\contentsline {subsection}{\numberline {7.11.3}Concluzii}{80}
+\contentsline {section}{\numberline {7.12}\IeC {\^I}nchegarea modulelor}{80}
+\contentsline {subsection}{\numberline {7.12.1}Descrierea modulului}{81}
+\contentsline {subsubsection}{Denumire}{81}
+\contentsline {subsubsection}{Dependin\IeC {{\textcommabelow t}}e}{81}
+\contentsline {subsubsection}{Schema bloc}{81}
+\contentsline {subsubsection}{Intr\IeC {\u a}ri}{81}
+\contentsline {subsubsection}{Ie\IeC {{\textcommabelow s}}iri}{82}
+\contentsline {subsection}{\numberline {7.12.2}Detalii de implementare}{82}
+\contentsline {subsubsection}{Automatul finit}{82}
+\contentsline {subsection}{\numberline {7.12.3}Concluzii}{84}
+\contentsline {subsection}{\numberline {7.12.4}Testarea modulelor}{84}
+\contentsline {chapter}{\numberline {8}Rezultate}{85}
+\contentsline {subsubsection}{Compara\IeC {{\textcommabelow t}}ia cu versiunea pe PC}{85}
+\contentsline {subsubsection}{Compara\IeC {{\textcommabelow t}}ia cu alte programe}{86}
+\contentsline {chapter}{\numberline {9}Concluzii}{89}

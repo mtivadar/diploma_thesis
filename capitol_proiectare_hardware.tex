@@ -1,0 +1,62 @@
+\documentclass[12pt,twoside,a4paper,fleqn]{book}
+\usepackage[top=2.5cm, bottom=2.5cm, left=3.5cm, right=3.5cm]{geometry}
+\usepackage[utf8x]{inputenc}
+\usepackage{textcomp}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{ucs}
+\usepackage[romanian]{babel}
+\usepackage{epsfig}
+\usepackage{graphicx} 
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{fancyhdr}
+
+
+
+\begin{document}
+
+\chapter{Proiectare hardware}
+
+\section{HDL, Verilog, scurtă introducere}
+Proiectarea hardware a acestui proiect, a fost făcută în limbajul Verilog HDL \cite{peter_verilog}. Cu astfel de limbaje de descriere hardware, se poate descrie logica unor circuite complexe. Se pot scrie procese combinaționale și procese secvențiale. Ca și mod de gândire, toate procesele secvențaile se vor întâmpla în paralel, la apariția semnalului de sincronizare. Există atribuiri blocante și non-blocante. Ca și mod de gândire, cele non-blocante pot fi considerate că se întâmplă în paralel, iar cele blocante sunt practic o cascadare a nivelurilor logice, intrarea unui nivel fiind rezultatul unui nivel anterior. Un subset din aceste declarații în Verilog este sintetizabil. Asta înseamnă că un program de sinteză va putea transforma acea descriere hardware într-un \emph{netlist}. Un netlist este o ierarhie de structuri logice, porți logice, interconexiuni între ele. Mai departe, acea structură de porți logice, se poate transforma într-o listă de interconexiuni pentru un FPGA. (vezi \ref{capitol_fpga})\\
+
+\section{Paradigme de proiectare}
+Proiectarea hardware în Verilog se poate face la $4$ niveluri de abstractizare. 
+\begin{itemize}
+\item Comportamental, unde se va descrie efectiv comportamentul funcției logice.
+\item RTL\footnote{Register Transfer Level.} folosește registre conectate prin expresii booleene.
+\item La nivel de porți logice. Adică interconexiuni directe între primitive logice.
+\item La nivel de tranzistor. Tranzistoare MOS în interiorul porților.
+\end{itemize}
+În acest proiect, s-a proiectat comportamental și RTL.\\
+Ca și în orice proiectare, sunt anumite paradigme, reguli de aur pentru o bună proiectare. O bună proiectare va permite ca circuitul să funcționeze la o frecvență mai mare. O proiectare proastă va funcționa la o frecvență mică, vor apărea erori de sincronizare, latențe prea mari și diferite între nivelurile logice, etc. \cite{high_performance_fpga, peter_verilog, connexant, jack_marshall}
+Cu toate că scopul meu a fost ca funcționarea acestui proiect să fie la  ofrecvență de 50MHz, lucru care probabil nu este chiar greu de realizat, voi aminti aici câteva reguli care m-au ajutat foarte mult în proiectare:
+\subsection{Identificarea blocurilor critice}
+Este foarte important de a determina blocurile cu niveluri logice cascadate. Aceste blocuri vor încetini tot circuitul, datorită propagării semnalului. În general trebuie evitată construirea a astfel de blocuri. Pentru a scăpa de astfel de ierarhii, este recomandată introducerea stagiilor de \emph{pipeline}, astfel încât circuitul să fie secvențial iar rezultatul să fie obținut în mai multe faze care vor fi memorate în registre. La fiecare ciclu de ceas se va calcula o fază a rezultatului, dar toate vor fi în paralel. În acest mod, la fiecare impuls de ceas vom avea un rezultat final. Astfel se poate crește frecvența circuitului, pentru că cea mai lungă cale de propagare va fi împărțită de registre. \cite{high_performance_fpga}
+\subsection{Memorarea ieșirilor}
+O altă regulă este de a memora ieșirile blocurilor, adică de a avea un nivel de registre la ieșiri în care să fie memorat rezultatul. Acest lucru va crește mult flexibilitatea și ușurința proiectării. În acest proiect fiecare bloc respectă această regulă. \cite{xilinx_coding_practices}
+\subsection{Semnale de ceas, reset}
+\subsubsection{Semnalul de reset sincron}
+În FPGA este de recomandat utilizarea semnalului de reset sincron pentru module în loc de semnal de reset asincron. De exemplu, conform \cite{xilinx_coding_practices} un multiplicator implementat cu stagii de pipeline într-un FPGA Virtex4 și cu reset asincron, va funcționa la o frecvență de 200MHz, iar dacă descrierea hardware se modifică pentru a funcționa cu un reset sincron, circuitul va funcționa la 500MHz. Acest lucru se întâmplă pentru că blocurile de multiplicare sunt construite cu un reset sincron, iar dacă se folosește un reset asincron, atunci logica va trebui să folosească alte resurse din FPGA, totul devenind mai lent. Folosirea resetului sincron va reduce și numărul de slice-uri folosite (vezi \ref{capitol_fpga}).
+
+\subsubsection{Semnalul de sincronizare}
+O regulă de aur este folosirea unui semnal \emph{enable} pentru a valida/invalida un modul în loc de compunerea semnalului de sincronizare cu alte semnale. Compunerea semnalului de sincronizare prin porți logice va duce la întârzieri a semnalului, rezultând probleme de sincronizare, etc.
+
+
+\subsection{Sumatoare arborescente sau înlănțuite}
+O problemă foarte importantă cu care m-am confruntat, a fost adunarea mai multor termeni. Un sumator de $n$ termeni proiectat într-o structură liniară, adică un lanț, va avea performanțe foarte scăzute pentru că rezultatul va apărea abia după o propagare după $n$ niveluri. Dacă proiectăm sumatorul sub ca o structură arborescentă, complexitatea lui va fi doar logaritmică. Dar, un sumator arborescent va consuma mai multă putere și mai multe resurse.\\
+Totuși, un lucru interesant \cite{xilinx_coding_practices}, este că în familia de FPGA-uri Virtex4, sunt anumite blocuri speciale denumite DSP48, proiectate pentru prelucrarea datelor, care au o structură lanț, dar foarte optimizate și vor avea performanțe mult mai bune ca un sumator arborescent standard.
+
+\subsection{Evitarea latch-urilor}
+Este întotdeauna de dorit evitarea inferării de latch-uri. Latch-urile sunt sensibile pe palier, nu pe fron ca și bistabilele, generând multe probleme. Pentru a evita latch-urile proiectarea trebuie să fie atentă, petntru a nu necesita elemente de memorie în plus și fără voia noastră. De exemplu într-o structură \emph{if} trebuie să exprimăm valoarea semnalului și în cazul în care nu ar fi satisfăcută condiția, altfel se va genera un latch pentru că trebuie memorată valoarea anterioară.
+
+
+\section{XST, Macro-uri}
+XST este programul de sintetizare de la Xilinx. Macro-urile sunt anumite descrieri funcționale recunoscute de XST pentru a genera o circuistică optimă pentru ele. În timpul rulării, XST va încerca să recunoască cât mai multe macro-uri posibile. Macro-urile pot fi: numărătoare, memorii RAM, registre, automate finite, decodificatoare prioritare, etc. \cite{xilinx_xst}\\
+Avem practic un set de reguli care ne spun cum să descriem hardware un bistabil, numărător, FSM pentru a fi recunoscute de programul de sinteză.\\
+De exemplu, pentru a folosi memoria BRAM, în \cite{xilinx_xst} avem niște reguli care vor fi folosite pentru a spune programului de sinteză ce fel de memorie vrem să folosim: citire sincronă/asincronă, dual-port, etc. La rularea lui, XST va încerca să recunoască cât mai multe astfel de descrieri. În cazul în care nu recunoaște, va încerca să contruiască funcțional circuitul.\\
+Pentru automatele finite \cite{xilinx_xst, peter_verilog}, sunt mai multe tipuri de descriere. Cel mai recomandat este de a separa logica secvențială, adică de tranziție a stării la apariția frontului crescător (de exemplu) al semnalului de ceas și logica combinațională de construire a stării viitoare și eventual logica semnalelor de ieșirie în fiecare stare. Sunt mai multe metode de implementare a automatelor, iar programul de sinteză poate fi instruit care mod să folosească. Există moduri optimizate pentru consum minim, resurse minime, viteză maximă, etc.
+
+\end{document}

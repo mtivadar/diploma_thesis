@@ -1,0 +1,14 @@
+digraph {
+RESET -> EXPLORE
+EXPLORE -> FETCH [label = "mutari=0"]
+EXPLORE -> FINISH
+EXPLORE -> STORED [ label = "sp++" ]
+EXPLORE -> PASS
+PASS -> SFARSIT_JOC
+SFARSIT_JOC -> FETCH [ label = "da" ]
+SFARSIT_JOC -> EXPLORE [ label = "nu" ]
+STORED -> EXPLORE
+STORED -> LEAF [ label = "sp=max" ]
+LEAF -> FETCH 
+FETCH -> EXPLORE [ label = "sp--" ]
+}

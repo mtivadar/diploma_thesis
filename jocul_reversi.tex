@@ -1,0 +1,90 @@
+\documentclass[12pt,twoside,a4paper,fleqn]{book}
+\usepackage[top=2.5cm, bottom=2.5cm, left=3.5cm, right=3.5cm]{geometry}
+\usepackage[utf8x]{inputenc}
+\usepackage{textcomp}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{ucs}
+\usepackage[romanian]{babel}
+\usepackage{epsfig}
+\usepackage{graphicx} 
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{fancyhdr}
+
+
+\floatstyle{ruled}
+\newfloat{fragmentsursa}{htbp}{loa}[chapter]
+\floatname{fragmentsursa}{Fragment sursă}
+
+
+\floatstyle{ruled}
+\newfloat{pseudocod}{htbp}{loa}[chapter]
+\floatname{pseudocod}{Pseudocod}
+
+\theoremstyle{definition}
+\newtheorem{definitie}{Definiția}
+
+\begin{document}
+\chapter{Jocul Reversi}
+\section{Istoric}
+Varianta modernă a jocului este bazată pe jocul Reversi inventat în anul $1883$ de către englezul Lewis Waterman și a fost foarte popular în Anglia la sfârșitul secolului XIX.\\
+Regulile moderne, acum universal acceptate, își au originea în Japonia de prin anii $1970$. Jocul a fost redenumit în numele Othello\footnote{În lucrare voi folosi ambele denumiri.} și a devenit o marcă înregistrată a companiei japoneze \emph{Tsukuda Original}. Campionate mondiale de Othello se țin din anul $1977$, iar majoritatea campionilor sunt japonezi. În $1997$, Logistello a câștigat în fața campionului mondial Takeshi Murakami cu scorul de 6:0. În ziua de azi, cel puțin după regulile standard, adică o tablă de joc 8x8, omul este considerat învins de către calculator.
+
+\section{Regulile jocului}
+\subsection{Notația}
+În figura \ref{fig:rev_rules1} avem notația standard în joc. Coloanele sunt numerotate de la \emph{a} la \emph{h} de la stânga spre dreapta, iar liniile sunt numerotate de la \emph{1} la \emph{8} de sus în jos. O poziție va fi referită prin notația $a1$, de exemplu pentru colțul stânga sus. Jucătorii sunt în general considerați \emph{Negru} și \emph{Alb}, dar se mai folosește și \emph{Albastru} și \emph{Roșu} cum am folosit și eu la afișarea pe monitor.
+\begin{figure}[h]
+\begin{center}
+\includegraphics*[scale = 0.4]{reversi_rules1.eps}
+\caption{\small{Poziția de început în Reversi/Othello.}}
+\label{fig:rev_rules1}
+\end{center}
+\end{figure}
+
+\subsection{Reguli}
+Jocul începe cu discuri negre poziționate pe poziția d5 și e4 și cu discuri albe poziționate pe poziția d4 și e5, precum în figura \ref{fig:rev_rules1}. Jucătorul negru va fi primul care va face o mutare, după care jucătorii vor alterna. O mutare legală constă în a pune un disc pe tabla de joc pe o poziție liberă, astfel încât să se captureze unul sau mai multe discuri inamice. Orice disc adversar care este flancat de către discul tocmai pus și un alt disc de aceași culoare pe o direcție oarecare, vor fi capturate. Capturarea se face pe direcțiile orizontală, verticală și pe ambele diagonale pe fiecare direcție în ambele sensuri. Capturarea este posibilă doar dacă între cele două discuri care flanchează, vor exista numai discuri adversare și toate pozițiile vor fi ocupate. O capturare constă în transformarea discurilor adversara în culoarea discului adăugat. Discurile pot fi întoarse (capturate) pe mai multe direcții la aceași mutare. Toate discurile flancate trebuie capturate, jucătorul nu poate alege care dintre acestea să fie. Dacă un jucător nu are mutări legale, adică oriunde ar poziționa un disc pe o poziție liberă nu va captura nici un disc adversar, atunci va ceda mutarea adversarului care va face mutări consecutive până când va avea și celălalt jucător o mutare legală. Un jucător nu poate ceda mutarea din propria lui inițiativă. Jocul se va termina când nici unul dintre jucător nu vor mai avea mutări legale.\\
+Dacă se joacă pe o tablă fizică, discurile vor avea pe o parte culoarea \emph{neagră}, iar pe cealaltă parte culoarea \emph{albă}. \cite{othello_fang, othello_master}\\
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics*[scale = 0.4]{reversi_rules2.eps}
+\caption{\small{(a) O stare oarecare de joc. (b) După ce negru pune un disc la „f3”.}}
+\label{fig:rev_rules2}
+\end{center}
+\end{figure}
+
+La sfârșitul jocului va câștiga jucătorul care are cele mai multe discuri de culoarea lui, pe tabla de joc. Puțin contează numărul de discuri diferență.
+
+\section{Particularități, principii}
+
+\subsection{Colțurile}
+Pentru jucătorii începători și intermediari \cite{othello_fang}, bătălia se dă pentru cucerirea colțurilor. Motivul este foarte clar: un disc poziționat în colț, nu va mai putea fi cucerit de către adversar, pentru că adversarul nu va avea cum să-l flancheze pentru a-l captura. Un colț devine un disc \emph{stabil}, stabilitatea fiind singurul factor care se traduce direct în câștig în Othello. 
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics*[scale = 0.4]{reversi_rules3.eps}
+\caption{\small{(a) O stare oarecare de joc. (b) După ce albul pune un disc la „e1”, va genera 5 discuri stabile.}}
+\label{fig:rev_rules3}
+\end{center}
+\end{figure}
+
+În figura \ref{fig:rev_rules3} se vede cum jucătorul alb construiește discuri stabile după ce a cucerit colțul. Cele $5$ discuri de pe linie, nu vor mai putea fi capturate de adversar, deci vor contribui direct la scorul final. În general, pozițiile din jurul colțurilor sunt periculoase, adică pot permite adversarului să cucerească colțul.
+
+\subsection{Concepte intermediare}
+„Greed is one of the deadly seven sins”\footnote{Lăcomia este unul dintre cele 7 păcate.} \cite{othello_fang} se aplică și în Othello. Ce se poate face în începutul jocului, când mai e mult până să ajungem în zona colțurilor? S-a observat că numărul mare de piese capturate nu este deloc un lucru bun. Motivul ar fi pentru că scade \emph{mobilitatea}, adică dacă pe tablă vom avea doar discuri de culoarea noastră și unul de culoarea adversarului, probabil nu vom mai avea mutări valide, iar adversarul va avea multe opțiuni. O tehnică bună, se pare că e să capturăm cât mai puține discuri la o mutare. \cite{othello_fang}
+O mutare \emph{tăcută} în Othello, este o mutare care nu va schimba cu mult configurația tablei de joc. Dacă de exemplu capturăm doar un disc adversar, acea mutare este o mutare tăcută. Acest concept este preluat din Șah, unde o mutare tăcută înseamnă cam același lucru. De obicei, o mutare tăcută este întotdeauna de preferat.
+\subsubsection{Zugzwang}
+Este un concept preluat din Șah, ce se aplică și la Othello și la multe alte jocuri. Un jucător este în \emph{Zugzwang}\footnote{Din lb. germană, s-ar traduce prin cuvântul „forțat”.} dacă este rândul lui la mutare, dar ar prefera să nu facă acea mutare pentru că i-ar aduce un dezavantaj. În Othello acest lucru se poate întâmpla atunci când singurele mutări valide ale jucătorului sunt cele de a ceda un colț. Acest lucru face diferența dintre un jucător amator/intermediar și unul avansat. Un jucător avansat va reuși să aducă în zugzwang pe adversar.
+\subsubsection{Mobilitatea}
+Mobilitatea este cel mai important lucru în Othello. O mobilitate mică, va duce la o dominare din partea adversarului, care ne va forța în \emph{zugzwang}. Mobilitatea se poate crește prin capturarea a cât mai puține discuri la o mutare. Funcțiile euristice construie în programele de Reversi se bazează foarte mult pe acest concept. Acest lucru ar părea la prima vedere în contradicție cu faptul că trebuie să câștigăm prin a avea mai multe discuri pe tablă decât adversarul. Regula este de a avea mai multe discuri ca adversarul \emph{la sfârșitul} jocului, nu în mijlocul lui.
+\subsection{Fazele jocului}
+Jocul se împarte în $3$ faze: jocul de început, jocul de mijloc, jocul de sfârșit.\footnote{Voi mai folosi și termenul în engleză: end-game.”} În faza de început, un sfat bun \cite{othello_fang} este să rămânem cu discurile în pătratul de 4x4 din interiorul tablei de joc, având colțurile opuse „c3” și „f6”. Mutările în acest pătrat va împiedica adversarul să poziționeze discuri pe laturi, lucru ce îi poate oferi un avantaj deoarece mutăriile pe laturi au șanse mai mari să fie mutări tăcute care vor scădea mobilitatea celuilalt jucător.\\
+În faza de mijloc, cel mai important lucru este creșterea mobilitătii. În acest fel se va forța adversarul să cedeze colțurile.\\
+În faza de sfârșit, urmează să construim pe ce am acumulat până acum. Dacă avem colțuri, le putem folosi ca ancore pentru a construi mai multe discuri stabile. În această fază a jocului se vor încălca toate regulile descrise anterior, cel mai important lucru fiind capturarea de cât mai multe discuri. Discurile stabile ar trebui construite sistematic, fără a lăsa discuri adversare între ele, care ar putea în final să întoarcă situația scorului. O carte foarte bună despre jocul Othello este „Othello: A Minute to Learn, A Lifetime to Master.” de Brian Rose \cite{othello_master} sau alta ar fi „Othello: From Beginner to Master” de Randy Fang \cite{othello_fang}.
+
+\tableofcontents
+
+\end{document}
+

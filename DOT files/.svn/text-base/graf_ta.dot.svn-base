@@ -1,0 +1,7 @@
+digraph D {
+   GATHER_0 -> GATHER
+   GATHER -> TRANSMIT_0
+   TRANSMIT_0 -> TRANSMIT
+   TRANSMIT -> TRANSMIT [ label = "txd_busy" ]
+   TRANSMIT -> DONE
+}

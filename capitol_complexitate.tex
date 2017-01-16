@@ -1,0 +1,51 @@
+\documentclass[12pt,twoside,a4paper,fleqn]{book}
+\usepackage[top=2.5cm, bottom=2.5cm, left=3.5cm, right=3.5cm]{geometry}
+\usepackage[utf8x]{inputenc}
+\usepackage{textcomp}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{ucs}
+\usepackage[romanian]{babel}
+\usepackage{epsfig}
+\usepackage{graphicx} 
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{fancyhdr}
+
+
+
+\begin{document}
+\chapter{Analiza jocului Reversi}
+Jocul Reversi este un joc în prezent nerezolvat. Pe o tablă 6x6 a fost rezolvat „ultra-ușor”, al doilea jucător fiind câștigător. Reversi face parte din jocurile considerate campioane, alături de Șah și Go, care în prezent nu au rezolvare. Dintre acestea, Go este cel mai complex și se pare că nu va fi rezolvat încă zeci de ani de acum în colo \cite{allis, games_solved_herik}.
+
+\section{Rezolvarea jocurilor}
+Rezolvarea unui joc se referă în general la determinarea rezultatului în cazul în care ambii jucători joacă perfect.
+Se consideră 3 tipuri de rezolvare a jocurilor \cite{allis, games_solved_herik}. 
+\subsubsection{Jocuri rezolvate \emph{ultra-ușor}}
+Reprezintă acele jocuri pentru care s-a determinat rezultatul pentru starea inițială a jocului $s_{0}$.
+\subsubsection{Jocuri rezolvate \emph{ușor}}
+Reprezintă acele jocuri, pentru care s-a determinat, pentru poziția inițială $s_{0}$, o strategie de joc pentru a câștiga \emph{cel puțin} cu valoarea minmax, folosind resurse rezonabile.\footnote{În engl. game-theoretic value.}
+\subsubsection{Jocuri rezolvate \emph{puternic}}
+Reprezintă acele jocuri pentru care s-a determinat o strategie optimă de câștig pentru orice stare a jocului, folosind resurse rezonabile. De exemplu cazul jocului Nim demonstrat de Knuth.
+
+\section{Tipul jocului}
+Reversi/Othello face parte din clasa de jocuri cu informație perfectă cu doi jucători și sumă zero. Jocurile se mai împart în două mari categorii, necesare pentru determinarea complexității și analiza lor.
+\subsection{Jocurile convergente}
+Un joc este considerat convergent aunci când spațiul stărilor descrește odată cu înaintarea în joc. În general, jocurile convergente pornesc cu multe piese pe tabla de joc, iar în moment ce jocul progresează, adică înaintează în timp, piesele sunt treptat scoase de pe tabla de joc \cite{games_solved_herik}. Acest aspect este foarte important, pentru că jocurile convergente pot avea bază de date pentru \emph{end-game}.\footnote{Din engl., faza de sfârșit a jocului.} Șah-ul de exemplu este un joc convergent. Fiind un joc convergent, spre sfârșitul jocului putem mult mai ușor cunoaște finalul. Jocul de Șah este rezolvat în momentul în care mai sunt 6 piese pe tabla de joc, oricare combinație ar fi.\footnote{Cei doi regi sunt luați în calcul.} În \cite{games_solved_herik} avem descrisă poziția de Șah din 6 piese cu cel mai lung drum până la mat, dacă ambii jucători joacă perfect.\footnote{Poziția necesită 262 de mutări până la mat.}
+\subsection{Jocurile divergente}
+Jocurile divergente de obicei pornesc cu foarte puține piese, iar pe parcursul jocului piesele se adaugă pe tabla de joc, rezultând într-o explozie a spațiului stărilor spre final. Acest tip de jocuri sunt imune analizei retro sî a contrucției de baze de date cu jocurile de final, datorită numărului de combinații foarte mare \cite{games_solved_herik}. În \cite{allis} avem o definiție formalizată matematic a convergenței/divergenței jocurilor, considerând $n$ clase disjuncte, fiecare clasă formată din toate stările jocului formate din $m$ piese. Reversi/Othello face parte din clasa jocurilor divergente, pentru că la fiecare mutare se adugă discuri pe tabla de joc, în final spațiul stărilor fiind în expansiune. În afară de faza de sfârșit a jocului, adăugând un disc pe tabla de joc, numărul de mutări legale este în creștere.
+
+\section{Compelxitatea}
+Complexitatea în jocuri, determină două mărimi: complexitatea pentru spațiul stărilor și complexitatea arborelui de joc.
+\subsection{Complexitatea pentru spațiul stărilor}
+Complexitatea spațiului stărilor este definită ca numărul de stări posibile de joc la care se pot ajunge pornind dintr-o oarecare stare, de exemplu starea inițială $s_{0}$. De exemplu, pentru un joc ca și „X și 0”, această complexitate se poate determina ușor matematic. O limită superioară ar fi dacă calculăm $3^{9}$, observând că fiecare pătrat poate conține un X sau un 0 sau să fie liber. Din acest număr se scad pozițile ilegale de joc și rezultă 5.478 stări de joc posibile \cite{allis}.
+
+\subsection{Complexitatea arborelui de joc}
+Complexitatea arborelui de joc, este definită ca și numărul total al nodurilor frunză ce formează arborele de joc, pornind de la starea inițială $s_{0}$ a jocului. De exemplu pentru un joc, J fiind starea inițială, dacă din J avem 20 de mutări posibile, iar apoi din fiecare mutare posibilă avem încă 30 de mutări posibile, înseamnă ca la cel mai jos nivel al arborelui am avea 600 de noduri terminale. Complexitatea arborelui de joc în acest exemplu este 600 \cite{allis}. Dacă dorim calcularea complexității arborelui de joc pentru un joc complicat precum Șah sau Reversi, este mult mai complicat și vom putea doar spune o limită superioară a acestuia. Complexitatea se aproximează folosind o medie a numărului de noduri ce pot porni dintr-un nod. De exemplu pentru jocul „X și 0”, avem o adâncime a arborelui de maxim 9 niveluri, iar la fiecare nivel $i$, factorul de lațime a arborelui este de $9 - i$, calculând complexitatea ne va da $9! = 362880$. Se observă că această complexitate este mai mare ca și spațiul stărilor, pentru că în arborele de joc se vor repeta multe stări ale jocului.
+
+\section{Determinarea complexității prin analiză\\ \hbox{„Monte Carlo”}}
+O limită superioară pentru spațiul stărilor în jocul Reversi, ar fi $3^{64}$ adică aproximativ $10^{30}$. Acest număr este obținut prin observația că tabla de joc are mărimea 8x8, adică 64, iar pe fiecare poziție se poate afla un disc negru, alb sau nimic. Bineînțeles, o parte din acest număr reprezintă stări de joc invalide, adică la care nu se poate ajunge prin nici o combinație. De exemplu pentru fiecare stare de joc trebuie să avem cele 4 poziții din mijloc ocupate, pentru că asta este starea inițială a jocului. O analiză Monte Carlo, ar presupune generarea unui număr de stări, de exemplu $100.000$, complet aleatoare. Considerăm existența unei funcții $\pi(s)$ care are ca rezultat \emph{adevărat} sau \emph{fals}, indicând dacă starea de joc generată este validă sau nu. Funcția este construită după mai multe observații ale jocului precum și regulile lui. De exemplu nu putem avea grupuri de discuri care să nu aibă legătură între ele, deoarece în Othello trebuie adaugat un disc în vecinătatea unui alt disc. Victor Allis \cite{allis} a făcut o astfel de analiză și a arătat că pentru Reversi/Othello, complexitatea spațiului stărilor este de aproximativ $10^{28}$.\\
+Compelxitatea arborelui de joc este aproximativ $10^{58}$, 10 fiind considerat numărul mediu de mutări posibile la fiecare stare. Adâncimea arborelui, $58$, a fost determinată prin analiza multor partide care în medie durează $58$ de mutări. \cite{allis}
+
+\end{document}

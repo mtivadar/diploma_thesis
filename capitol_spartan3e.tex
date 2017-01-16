@@ -1,0 +1,86 @@
+\documentclass[12pt,twoside,a4paper,fleqn]{book}
+\usepackage[top=2.5cm, bottom=2.5cm, left=3.5cm, right=3.5cm]{geometry}
+\usepackage[utf8x]{inputenc}
+\usepackage{textcomp}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{ucs}
+\usepackage[romanian]{babel}
+\usepackage{epsfig}
+\usepackage{graphicx} 
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{fancyhdr}
+
+
+
+\begin{document}
+\chapter{Placa de dezvoltare Spartan3E}
+\section{Logică programabilă, FPGA}
+\subsection{Scurtă descriere}
+Un FPGA\footnote{Field Programmable Gate Array.} este un dispozitiv ce permite programarea expresiilor logice. Ca și capacitate, un FPGA este extrem de mare comparativ cu circuitele logice programabile de genul PLD, CPLD. În mod obișnuit, un FPGA este folosit pentru a construi un prototip hardware ce apoi va urma să fie implementat într-un ASIC\footnote{Application Specific Integrated Circuit.}. Totuși, tot mai des FPGA-urile sunt folosite ca produs final, datorită flexibilității lor foarte mari.\\
+La începutul anilor $1980$, cele mai multe circuite logice erau implementate în tehnologie LSI\footnote{Large Scale of Integration.}. Aceste circuite erau: microprocesoare, diferite \emph{controlere}, etc. Bineînțeles, fiecare sistem avea nevoie de o logică suplimentară\footnote{În engl. glue logic.} pentru comunicarea între dispozitive. Pentru acest lucru erau construite circuite integrate specializate care îndeplineau funcția respectivă, dar procesul era foarte scump și inflexibil, logica diferind mult de la un produs finit la altul. Având această problemă, Xilinx, o fompanie de startup, a introdus în anul $1984$ tehnologia FPGA ca o alternativă la circuitele integrate personalizate pentru implementarea logicii de alipire. Datorită programelor de tip CAD, astăzi circuitele logice pot fi implementate foarte ușor fără diferite procese fizice complicate. \cite{Synthesis_arithmetic_circuits}\\
+\subsection{Arhitectura FPGA}
+Arhitectura de baza a FPGA-ului constă într-o matrice bidimensională de blocuri logice și bistabile. Omul va trebui să descrie logica pentru fiecare bloc, să descrie intrările/ieșirile blocurilor precum și conexiunile între blocuri.
+\subsubsection{Programarea}
+Tipul de programare folosit de FPGA-urile de la Xilinx (cele mai răspândite), este bazat pe memoria SRAM. Conexiunile FPGA se fac folosind porți de transmisie, multiplexoare, toate fiind controlate de celule SRAM. Singurul dezavantaj al acestei metode ar fi memoria SRAM care va ocupa cel mai mult. Un astfel de circuit va putea fi configurat de un număr infinit de ori. \cite{Synthesis_arithmetic_circuits}
+\subsubsection{Look-Up Table}
+Felul în care funcțiile logice sunt implementate în blocurile logice este specific FPGA-urilor. Tabelele de LookUp sunt implementate ca o memorie, sau multiplexoare și memorie. O memorie de dimensiunea $2^{n}$x$1$ poate implementa orice funcție logică cu $n$ intrări. În practică, valorile folosite pentru $n$ sunt $2,3,4,5$. O tabelă $n$-LUT, adică implementată cu o memorie de mărimea $2^{n}$, este implementarea directă a unei tabele de adevăr.
+\subsubsection{Bloc logic}
+Cel mai simplist, un bloc logic este implementat folosind o tabelă LUT cu $4$ intrări, care va putea implementa o logică combinațională de $4$ variabile și un bistabil care opțional va memora ieșirea funcției. Un FPGA este compuns dintr-o matrice foarte mare de astfel de blocuri logice.
+\subsubsection{Resurse FPGA Xilinx}
+Resursele de bază într-un FPGA de la Xilinx sunt:
+\begin{itemize}
+\item Blocuri logice configurabile, care vor conține logica combinațională și bistabile.
+\item Blocuri I/O care vor face legătura FPGA-ului cu exteriorul.
+\item PI, adică interconexiuni programabile.
+\item Blocuri de memorie RAM (BRAM).
+\item Alte resurse: circuite tri-state, circuite speciale pentru propagarea semnalului de ceas, etc.
+\end{itemize}
+
+Arhitecturile noi, chiar și Spartan3, pe lângă aceste resurse standard au în dotare și multiplicatoare hardware dedicate, DCM-uri \footnote{Digital Clock Manager.}, un circuit specializat cu care se poate modifica semnalul de ceas: multiplica, divide, defaza, etc. VirtexII are înclus chiar și un procesor PowerPC care poate fi folosit.
+
+\subsubsection{Slice-urile}
+Un CLB (Configurable Logic Block) dintr-un FPGA este compus din slice-uri. Spartan3 are de exemplu 4 slice-uri per CLB. Fiecare slice conține două LUT-uri și două elemente de memorare. Pe lângă operația de generator de funcții, un LUT poate fi folosit ca o memorie de 16x1 biți. Mai mult, cele două LUT-uri pot fi combinate pentru a forma o memorie de 16x2 biți sau 32x1 biți memorie sincronă, sau 16x1 biți memorie dual-port. LUT-urile pot fi folosite și ca registre de deplasare pentru capturarea datelor.
+\subsubsection{Elementele de stocare}
+Elementele de stocare dintr-un LUT pot fi folosite ca bistabile D sincrone, sau senzitive pe nivel.
+\subsubsection{Resurse aritmetice}
+FPGA-urile moderne au circuistică suplimentară pentru a optimiza operațiile aritmetice. De exemplu, linii dedicate pentru propagarea transportului la adunare.
+
+\subsection{BRAM}
+FPGA-urile Xilinx au incorporate memorii RAM denumite „Block RAM”. Aceste memorii sunt organizate în coloane în chip. Placa ce o dețin, Spartan3E cu un FPGA XC3S500E are două coloane de BRAM a câte $10$ blocuri fiecare, în total $20$ de blocuri RAM care în total sunt 360K biți de memorie RAM incorporată în FPGA, foarte rapidă.\cite{xilinx_ug331}\\
+Fizic, fiecare bloc de RAM are două porturi de acces complet independente, fiecare port suportă operația de citire și de scriere. Fiecare port este sincron cu propriul lui semnal de ceas și fiecare port deține semnalele lui de control. Astfel, memoria poate fi folosită ca și memorie dual port. Diferite programe de sintetizare, precum și XST\footnote{Xilinx Synthesis Tool.} sunt capabile să infereze memorie BRAM pe baza descrierii hardware. Astfel, o descriere hardware care respectă regulile inferării de memorie block RAM, va duce la generarea unui anume \emph{bitstream} care va folosi resursa de block RAM din FPGA. \cite{xilinx_ug331}
+
+
+\section{Spartan3E}
+Placa de dezvoltare „Spartan3E Starter Kit” conține un FPGA XC3S500E.\\
+Resursele FPGA-ului sunt \cite{xilinx_spartan_datasheet}:
+\begin{itemize}
+\item 1164 blocuri logice.
+\item în total $4 \cdot 1164$ adică 4656 de slice-uri.
+\item 360K biți de memorie bloc RAM.
+\item 20 de multiplicatoare dedicate (două intrări a câte 18bit per multiplicator).
+\item 4 DCM-uri.
+\end{itemize}
+
+Placa de dezvoltare mai conține:
+\begin{itemize}
+\item O memorie 4Mbit Platform Flash, memorie ROM configurabilă.
+\item un CPLD de 4 macrocelule, folosibil.
+\item 64MB DDR SDRAM, linia de date fiind de 16 biți, la o frecvență de 100+ Mhz.
+\item 16MB memorie Flash accesabilă paralel. (Poate memora configurația FPGA-ului)
+\item 16Mbit memorie Flash serială.
+\item Ecran LCD 2x16 caractere.
+\item interfață PS/2.
+\item interfață VGA.
+\item 10/100 Ethernet PHY.
+\item două interfețe RS232 9 pini.
+\item oscilator 50Mhz.
+\item patru convertoare digital-analogice.
+\item două convertoare analogice-digitale.
+\item LED-uri, butoane.
+\end{itemize}
+
+\end{document}
+

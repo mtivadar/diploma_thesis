@@ -1,0 +1,23 @@
+\documentclass[12pt,twoside,a4paper,fleqn]{book}
+\usepackage[top=2.5cm, bottom=2.5cm, left=3.5cm, right=3.5cm]{geometry}
+\usepackage[utf8x]{inputenc}
+\usepackage{textcomp}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{ucs}
+\usepackage[romanian]{babel}
+\usepackage{epsfig}
+\usepackage{graphicx} 
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{fancyhdr}
+
+
+
+\begin{document}
+Ideea de „gândire artificială” în jocurile precum Șah, Go, Reversi a fascinat lumea încă din cele mai vechi timpuri în momentul în care nu existau calculatoare moderne, iar posibilitatea rezolvării unui joc de către o mașină era un mister total. În anul $1770$, mașina \emph{The Turk} era cunoscută ca și „mașina automată de șah”, a fost probabil una din cele mai importante invenții ale omului care a răspândit întrebarea, „Oare este capabilă o mașină să gândească?”. Bineînteles, \emph{The Turk} era o farsă extraordinar de bine realizată, o mașinărie construită de către \emph{Wolfgang von Kempelen} care părea capabilă de un joc de șah foarte competent, precum și de rezolvarea problemei \emph{Turul Cavalerului}.\footnote{Problema acoperirii tablei de șah cu un cal, astăzi o problemă trivială rezolvabilă prin forță brută, existând și metode mai evoluate.} Cel puțin așa se credea inițial, pentru că mașinăria avea de fapt în ea ascuns un om, care printr-un mecanism complicat, instruia operatorul ce să facă. Farsa a bucurat oamenii timp de $84$ de ani, însuși Napolean Bonaparte jucând o partidă cu mașinăria. A fost un pas mare din punct de vedere filosofic, întrebarea a rămas, frământând mințile oamenilor mult timp.\\
+În $1927$, matematicianul și filosoful John von Neumann, a enunțat în lucrarea sa „Zur Theorie der Gesellschaftsspiele" teoria \emph{minmax}, iar în $1944$ împreună cu Oskar Morgenstern a fundamentat domeniul Teoria Jocurilor. Din acest moment exista posibilitatea algoritmizării unui joc de șah.\cite{Shoham}\cite{Allis}\\
+Claude Shannon, a publicat în $1949$ lucrarea intitulată „Programming a Computer for Playing Chess” în care a descris funcționalitatea unui program de șah pe un calculator, folosind teoriile lui Neumann. Shannon a observat imposibilitatea unui calculator de a explora întreg spațiul al stărilor și a propus metoda de explorare parțială, evaluând starea tablei de joc printr-o funcție euristică propusă. Programul, nefiind realizat, era considerat capabil să joace împotriva unui adversar începător.\cite{Shannon}\\
+În $1997$ IBM a proiectat calculatorul \emph{Deep Blue}, un adversar comparabil cu campionul mondial \emph{Garry Kasparov}. Mașinăria era un monstru, o arhitectură masiv paralelă conținând $30$ de procesoare care funcționau la frecvența de $120MHz$, la care se adăugau $480$ de chipuri VLSI specializate pentru jocul de șah. Rezultatul a fost $3.5 - 2.5$ pentru \emph{Deep Blue}.\footnote{0.5 reprezintă remiză.}\\
+\end{document}

@@ -1,0 +1,1684 @@
+\documentclass[12pt,twoside,a4paper,fleqn]{book}
+\usepackage[top=2.5cm, bottom=2.5cm, left=3.5cm, right=3.5cm]{geometry}
+\usepackage[utf8x]{inputenc}
+\usepackage{textcomp}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{ucs}
+\usepackage[romanian]{babel}
+\usepackage{epsfig}
+\usepackage{graphicx} 
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{fancyhdr}
+
+
+\title{\huge{Accelerare hardware a explorării în spațiul stărilor pentru jocul Reversi}}
+\author{
+Marius~M.~TIVADAR\\
+Universitatea „POLITEHNICA” Timișoara, România\\
+Conducător științific: conf. dr. ing. Doru TODINCĂ\\
+- Lucrare de diplomă -
+}
+
+\newenvironment{changemargin}[2]{%
+  \begin{list}{}{%
+    \setlength{\topsep}{0pt}%
+    \setlength{\leftmargin}{#1}%
+    \setlength{\rightmargin}{#2}%
+    \setlength{\listparindent}{\parindent}%
+    \setlength{\itemindent}{\parindent}%
+    \setlength{\parsep}{\parskip}%
+  }%
+  \item[]}{\end{list}}
+
+
+
+%\renewcommand{\chaptermark}[1]{\markboth{\chaptername\ \thechapter.\ #1}{}}
+%\renewcommand{\sectionmark}[1]{\markright{\thesection.\ #1}}
+
+\floatstyle{ruled}
+\newfloat{fragmentsursa}{htbp}{loa}[chapter]
+\floatname{fragmentsursa}{Fragment sursă}
+
+\floatstyle{ruled}
+\newfloat{pseudocod}{htbp}{loa}[chapter]
+\floatname{pseudocod}{Pseudocod}
+
+\theoremstyle{definition}
+\newtheorem{definitie}{Definiția}
+
+\begin{document}
+\renewcommand{\today}{21 iunie 2009}
+%\setlength{\leftmargin}{2.5cm}
+%\setlength{\rightmargin}{2.5cm}
+\begin{changemargin}{-1cm}{-1cm}
+\maketitle
+\end{changemargin}
+
+\tableofcontents
+
+
+\chapter{Introducere}
+Ideea de „gândire artificială” în jocurile precum Șah, Go, Reversi a fascinat lumea încă din cele mai vechi timpuri în momentul în care nu existau calculatoare moderne, iar posibilitatea rezolvării unui joc de către o mașină era un mister total. În anul $1770$, mașina \emph{The Turk} era cunoscută ca și „mașina automată de șah”, a fost probabil una din cele mai importante invenții ale omului care a răspândit întrebarea, „Oare este capabilă o mașină să gândească?”. Bineînteles, \emph{The Turk} era o farsă extraordinar de bine realizată, o mașinărie construită de către \emph{Wolfgang von Kempelen} care părea capabilă de un joc de șah foarte competent, precum și de rezolvarea problemei \emph{Turul Cavalerului}.\footnote{Problema acoperirii tablei de șah cu un cal, astăzi o problemă trivială rezolvabilă prin forță brută, existând și metode mai evoluate.} Cel puțin așa se credea inițial, pentru că mașinăria avea de fapt în ea ascuns un om, care printr-un mecanism complicat, instruia operatorul ce să facă. Farsa a bucurat oamenii timp de $84$ de ani, însuși Napolean Bonaparte jucând o partidă cu mașinăria. A fost un pas mare din punct de vedere filosofic, întrebarea a rămas, frământând mințile oamenilor mult timp.\\
+În $1927$, matematicianul și filosoful John von Neumann, a enunțat în lucrarea sa „Zur Theorie der Gesellschaftsspiele" teoria \emph{minmax}, iar în $1944$ împreună cu Oskar Morgenstern a fundamentat domeniul Teoria Jocurilor. Din acest moment exista posibilitatea algoritmizării unui joc de șah.\cite{Shoham}\cite{allis}\\
+Claude Shannon, a publicat în $1949$ lucrarea intitulată „Programming a Computer for Playing Chess” în care a descris funcționalitatea unui program de șah pe un calculator, folosind teoriile lui Neumann. Shannon a observat imposibilitatea unui calculator de a explora întreg spațiul al stărilor și a propus metoda de explorare parțială, evaluând starea tablei de joc printr-o funcție euristică propusă. Programul, nefiind realizat, era considerat capabil să joace împotriva unui adversar începător.\cite{Shannon}\\
+În $1997$ IBM a proiectat calculatorul \emph{Deep Blue}, un adversar comparabil cu campionul mondial \emph{Garry Kasparov}. Mașinăria era un monstru\cite{deepblue}, o arhitectură masiv paralelă conținând $30$ de procesoare IBM RS/6000 care funcționau la frecvența de $120MHz$, la care se adăugau $480$ de chipuri VLSI specializate pentru jocul de șah. Deep Blue era capabil sa analizeze $200$ milioane poziții/secundă. Rezultatul a fost $3.5 - 2.5$ pentru \emph{Deep Blue}.\footnote{0.5 reprezintă remiză.}\\
+\section{Tema Proiectului}
+Ce îmi propun eu în acest proiect, este de a proiecta un calculator capabil să joace Reversi cu o accelerare puternică hardware, în dorința de a fi mai rapid ca un PC. Funcționalitatea este implementată în FPGA, iar mașina este autonomă, fiind legată doar la un monitor pentru a vizualiza tabla. Pentru explorare în spațiul stărilor folosesc algoritmul clasic \emph{minmax} cu optimizare \emph{alpha-beta} ce va reduce complexitatea algoritmului clasic. Voi proiecta practic un chip specializat, prototip implementat în FPGA, capabil să joace acest joc. Modulele din care este compus, sunt specializate și fiecare au funcții specifice jocului. De exemplu, modulul de generare a mutărilor valide, modulul de tranziționare de la o stare la alta, modulul de evaluare euristică a tablei de joc. Fiecare modul este gândit încât să exploateze avantajul hardware în fața software-ului pe un CPU general. Mașina are un semnal de ceas de $50MHz$. Voi identifica modulele considerate cele mai costisitoare computațional și am să încerc o paralelizare internă a acestora. Modulul de evaluare a stării de joc, conține o serie de parametrii determinați empiric, iar proiectarea lui va exploata puternic capabilitățile hardware. Totuși, pentru creșterea frecvenței va fi nevoie de și mai multă proiectare, dar nu este scopul lucrării de față. În final, voi compara cu același algoritm, aceleași euristici, dar implementate pe un PC. Rezultatul este pe departe în favoarea jocului implementat în FPGA.\\
+
+\chapter{Jocul Reversi}
+\section{Istoric}
+Varianta modernă a jocului este bazată pe jocul Reversi inventat în anul $1883$ de către englezul Lewis Waterman și a fost foarte popular în Anglia la sfârșitul secolului XIX.\\
+Regulile moderne, acum universal acceptate, își au originea în Japonia de prin anii $1970$. Jocul a fost redenumit în numele Othello\footnote{În lucrare voi folosi ambele denumiri.} și a devenit o marcă înregistrată a companiei japoneze \emph{Tsukuda Original}. Campionate mondiale de Othello se țin din anul $1977$, iar majoritatea campionilor sunt japonezi. În $1997$, Logistello \cite{logistello} a câștigat în fața campionului mondial Takeshi Murakami cu scorul de 6:0. În ziua de azi, cel puțin după regulile standard, adică o tablă de joc 8x8, omul este considerat învins de către calculator \cite{man_vs_machine}.
+
+\section{Regulile jocului}
+\subsection{Notația}
+În figura \ref{fig:rev_rules1} avem notația standard în joc. Coloanele sunt numerotate de la \emph{a} la \emph{h} de la stânga spre dreapta, iar liniile sunt numerotate de la \emph{1} la \emph{8} de sus în jos. O poziție va fi referită prin notația $a1$, de exemplu pentru colțul stânga sus. Jucătorii sunt în general considerați \emph{Negru} și \emph{Alb}, dar se mai folosește și \emph{Albastru} și \emph{Roșu} cum am folosit și eu la afișarea pe monitor.
+\begin{figure}[h]
+\begin{center}
+\includegraphics*[scale = 0.4]{reversi_rules1.eps}
+\caption{\small{Poziția de început în Reversi/Othello.}}
+\label{fig:rev_rules1}
+\end{center}
+\end{figure}
+
+\subsection{Reguli}
+\label{reguliOthello}
+Jocul începe cu discuri negre poziționate pe poziția d5 și e4 și cu discuri albe poziționate pe poziția d4 și e5, precum în figura \ref{fig:rev_rules1}. Jucătorul negru va fi primul care va face o mutare, după care jucătorii vor alterna. O mutare legală constă în a pune un disc pe tabla de joc pe o poziție liberă, astfel încât să se captureze unul sau mai multe discuri inamice. Orice disc adversar care este flancat de către discul tocmai pus și un alt disc de aceași culoare pe o direcție oarecare, vor fi capturate. Capturarea se face pe direcțiile orizontală, verticală și pe ambele diagonale pe fiecare direcție în ambele sensuri. Capturarea este posibilă doar dacă între cele două discuri care flanchează, vor exista numai discuri adversare și toate pozițiile vor fi ocupate. O capturare constă în transformarea discurilor adversare în culoarea discului adăugat. Discurile pot fi întoarse (capturate) pe mai multe direcții la aceași mutare. Toate discurile flancate trebuie capturate, jucătorul nu poate alege care dintre acestea să fie. Dacă un jucător nu are mutări legale, adică oriunde ar poziționa un disc pe o poziție liberă nu va captura nici un disc adversar, atunci va ceda mutarea adversarului care va face mutări consecutive până când va avea și celălalt jucător o mutare legală. Un jucător nu poate ceda mutarea din propria lui inițiativă. Jocul se va termina când nici unul dintre jucător nu vor mai avea mutări legale.\\
+Dacă se joacă pe o tablă fizică, discurile vor avea pe o parte culoarea \emph{neagră}, iar pe cealaltă parte culoarea \emph{albă}. \cite{othello_fang, othello_master}\\
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics*[scale = 0.4]{reversi_rules2.eps}
+\caption{\small{(a) O stare oarecare de joc. (b) După ce negru pune un disc la „f3”.}}
+\label{fig:rev_rules2}
+\end{center}
+\end{figure}
+
+La sfârșitul jocului va câștiga jucătorul care are cele mai multe discuri de culoarea lui, pe tabla de joc. Puțin contează numărul de discuri diferență.
+
+\section{Particularități, principii}
+
+\subsection{Colțurile}
+Pentru jucătorii începători și intermediari \cite{othello_fang}, bătălia se dă pentru cucerirea colțurilor. Motivul este foarte clar: un disc poziționat în colț, nu va mai putea fi cucerit de către adversar, pentru că adversarul nu va avea cum să-l flancheze pentru a-l captura. Un colț devine un disc \emph{stabil}, stabilitatea fiind singurul factor care se traduce direct în câștig în Othello. 
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics*[scale = 0.4]{reversi_rules3.eps}
+\caption{\small{(a) O stare oarecare de joc. (b) După ce albul pune un disc la „e1”, va genera 5 discuri stabile.}}
+\label{fig:rev_rules3}
+\end{center}
+\end{figure}
+
+În figura \ref{fig:rev_rules3} se vede cum jucătorul alb construiește discuri stabile după ce a cucerit colțul. Cele $5$ discuri de pe linie, nu vor mai putea fi capturate de adversar, deci vor contribui direct la scorul final. În general, pozițiile din jurul colțurilor sunt periculoase, adică pot permite adversarului să cucerească colțul.
+
+\subsection{Concepte intermediare}
+„Greed is one of the deadly seven sins”\footnote{Lăcomia este unul dintre cele 7 păcate.} \cite{othello_fang} se aplică și în Othello. Ce se poate face în începutul jocului, când mai e mult până să ajungem în zona colțurilor? S-a observat că numărul mare de piese capturate nu este deloc un lucru bun. Motivul ar fi pentru că scade \emph{mobilitatea}, adică dacă pe tablă vom avea doar discuri de culoarea noastră și unul de culoarea adversarului, probabil nu vom mai avea mutări valide, iar adversarul va avea multe opțiuni. O tehnică bună, se pare că e să capturăm cât mai puține discuri la o mutare. \cite{othello_fang}
+O mutare \emph{tăcută} în Othello, este o mutare care nu va schimba cu mult configurația tablei de joc. Dacă de exemplu capturăm doar un disc adversar, acea mutare este o mutare tăcută. Acest concept este preluat din Șah, unde o mutare tăcută înseamnă cam același lucru. De obicei, o mutare tăcută este întotdeauna de preferat.
+\subsubsection{Zugzwang}
+Este un concept preluat din Șah, ce se aplică și la Othello și la multe alte jocuri. Un jucător este în \emph{Zugzwang}\footnote{Din lb. germană, s-ar traduce prin cuvântul „forțat”.} dacă este rândul lui la mutare, dar ar prefera să nu facă acea mutare pentru că i-ar aduce un dezavantaj. În Othello acest lucru se poate întâmpla atunci când singurele mutări valide ale jucătorului sunt cele de a ceda un colț. Acest lucru face diferența dintre un jucător amator/intermediar și unul avansat. Un jucător avansat va reuși să aducă în zugzwang pe adversar.
+\subsubsection{Mobilitatea}
+\label{mobility}
+Mobilitatea este cel mai important lucru în Othello. O mobilitate mică, va duce la o dominare din partea adversarului, care ne va forța în \emph{zugzwang}. Mobilitatea se poate crește prin capturarea a cât mai puține discuri la o mutare. Funcțiile euristice construite în programele de Reversi se bazează foarte mult pe acest concept. Acest lucru ar părea la prima vedere în contradicție cu faptul că trebuie să câștigăm prin a avea mai multe discuri pe tablă decât adversarul. Regula este de a avea mai multe discuri ca adversarul \emph{la sfârșitul} jocului, nu în mijlocul lui.
+\subsection{Fazele jocului}
+Jocul se împarte în $3$ faze: jocul de început, jocul de mijloc, jocul de sfârșit.\footnote{Voi mai folosi și termenul în engleză: end-game.”} În faza de început, un sfat bun \cite{othello_fang} este să rămânem cu discurile în pătratul de 4x4 din interiorul tablei de joc, având colțurile opuse „c3” și „f6”. Mutările în acest pătrat va împiedica adversarul să poziționeze discuri pe laturi, lucru ce îi poate oferi un avantaj deoarece mutăriile pe laturi au șanse mai mari să fie mutări tăcute care vor scădea mobilitatea celuilalt jucător.\\
+În faza de mijloc, cel mai important lucru este creșterea mobilitătii. În acest fel se va forța adversarul să cedeze colțurile.\\
+În faza de sfârșit, urmează să construim pe ce am acumulat până acum. Dacă avem colțuri, le putem folosi ca ancore pentru a construi mai multe discuri stabile. În această fază a jocului se vor încălca toate regulile descrise anterior, cel mai important lucru fiind capturarea de cât mai multe discuri. Discurile stabile ar trebui construite sistematic, fără a lăsa discuri adversare între ele, care ar putea în final să întoarcă situația scorului. O carte foarte bună despre jocul Othello este „Othello: A Minute to Learn, A Lifetime to Master.” de Brian Rose \cite{othello_master} sau alta ar fi „Othello: From Beginner to Master” de Randy Fang \cite{othello_fang}.
+
+
+
+\chapter{Fundamente teoretice pentru jocul Reversi}
+\section{Noțiuni de Teoria Jocurilor}
+Teoria jocurilor este o ramură a matematicii aplicate, care se ocupă cu studiul situaților competitive. Problemele de interes implică participanți multipli, fiecare având obiective independente referitoare la o anumită resursă sau un anumit sistem, iar succesul unui agent implicat în joc depinde și de alegerea celorlalți agenți. Teoria jocurilor descrie un limbaj care formalizează matematic, analizează și structurează situațiile competitive.\cite{turocy} \\
+
+Pentru că teoria jocurilor studiază scenariile competitive, problemele se numesc \emph{jocuri} iar agenții se numesc \emph{jucători}\footnote{În continuare voi folosi aceste două denumiri.}. În jocuri, acțiunile jucătorilor se numesc \emph{mutări}, iar rolul analizei este de a identifica secvența de mutări ce trebuie \emph{jucată}. Secvența de mutări a unui jucător, se numește \emph{strategie}, iar o \emph{strategie optimă} este o secvența de mutări care duce la cel mai bun rezultat. O strategie optimă nu este neaparat unică, pot exista mai multe strategii care să aibă același rezultat și toate sunt optime, atâta timp cât nici o altă strategie nu aduce un rezultat mai bun. \\
+Una dintre ipoteze în teoria jocurilor, este că jucătorii sunt \emph{raționali}. Un jucător rațional va alege întotdeauna o mutare care îi va aduce cel mai mare venit, care în mod rațional este cea mai bună alegere pentru el, iar mulțimea mutărilor alese formează o strategie optimă.\label{rational} Ne putem gândi la venit ca fiind o \emph{funcție de utilitate}, care diferă de la joc la joc. O funcție de utilitate este o corespondență între o stare curentă a jocului și un număr real, iar valoarea este interpretată ca nivelul de mulțumire al jucătorului. Considerăm $A$ fiind mulțimea stărilor unui joc oarecare, $\forall a,b \in A$, funcția $u:A\rightarrow{}\mathbb{R}$ este o funcție de utilitate, atunci \cite{osborne}:
+\begin{equation}
+u_{i}(a) > u_{i}(b) \qquad{} \text{dacă și numai dacă jucătorul $i$ preferă $a$ în favoarea lui $b$.} 
+\end{equation}
+
+ În jocuri, se folosește termenul \emph{cunoștințe comune}\cite{turocy}. Cunoștințele comune sunt informații deținute de către toți participanții la joc. Raționalitatea adversarilor este o cunoștință comună, precum și structura jocului și regulile jocului.\footnote{Ideea de raționalitate poate fi relaxată, de exemplu în psihologie, unde scopul este de a studia comportamentul uman în situații competitive.} În aceste condiții, scopul analizei este de a prezice modul în care jocul va fi jucat de către jucători raționali, sau de a găsi cea mai bună strategie împotriva jucătorilor raționali.\\
+Un important criteriu de împărțire a jocurilor, este modul în care se desfăsoară ele în timp. Există două mari clase: \emph{Jocuri simultane}, în care jucătorii acționează simultan\footnote{Simultan se referă la faptul că un jucător nu așteaptă ca un alt jucător să facă o mutare. Toți jucătorii vor acționa în momentul în care se decid, neexistând o regulă} (în această clasă intră majoritatea jocurilor care modelează situații competitive reale din diferite domenii) și \emph{jocuri secvențiale} în care jucătorii acționează secvențial, după o anumită regulă. În continuare mă voi referi la jocurile secvențiale, ele fiind fundamentul teoretic al acestei lucrări.\\
+Pentru reprezentarea unui joc secvențial, se folosește \emph{forma extinsă}. Forma extinsă presupune desenarea unui arbore, în care nodurile sunt stări ale jocului și este o descriere completă asupra evoluției jocului. Descrierea pornește de la rădăcina arborelui, care este starea inițială a jocului, iar fiii sunt stările viitoare ale jocului. Un nod va avea un număr egal de fii cu numărul de mutări permise de regulile jocului pentru jucătorul care e la rând în starea curentă a jocului. Nodurile terminale ale arborelui, reprezintă \emph{stări finale} ale jocului. O stare finală a jocului, presupune că jocul s-a terminat și nu există nici o tranziție de la starea finală la altă stare. \cite{Shoham}\\
+În continuare vom defini proprietăți ale jocurilor, care sunt necesare pentru această lucrare.
+\subsection{Informația perfectă}
+Această proprietate împarte jocurile în două mulțimi disjuncte \cite{allis}: Jocurile cu \emph{informație perfectă} și jocurile cu  \emph{informație imperfectă}. Informație perfectă presupune că în orice moment $t_{0}$ în timpul jocului, fiecare jucător are acces la toate informațiile definitorii ale jocului. Informații definitorii înseamnă că: în orice moment $t_{0}$ fiecare jucător cunoaște toate mutările ce au avut loc până în momentul $t_{0}$. În această categorie de jocuri, intră jocuri precum șah-ul, go, reversi, table, etc. La șah de exemplu, fiecare jucător vede în orice moment tabla de joc și cunoaște mutările anterioare, piesele ce au fost capturate, poziția pieselor pe tablă. Singurul lucru necunoscut ramâne strategia adversarului. Categoria de jocuri cu \emph{informație imperfectă} cuprinde jocuri precum poker, unde un jucător nu cunoaște cărțile adversarului. Jocurile care prezintă un element nedeterminist, precum aruncarea unor zaruri, intră în categoria jocurilor cu informație perfectă cu \emph{șansă}. Elementul nedeterminist poate fi considerat ca făcând parte din regulile jocului, o funcție care în orice moment din joc va genera mulțimea mutărilor posibile. Acest tip de jocuri se mai numesc și jocuri cu \emph{informație incompletă}.
+\subsubsection{Strategia optimă}Strategia optimă într-un joc cu informație perfectă, întotdeauna constă într-o \emph{strategie pură}\cite{allis}. O strategie pură este o definiție completă, deterministă, a strategiei alese de către un jucător. Mulțimea strategiilor unui jucător, în acest tip de joc, este formată din strategii pure. O \emph{strategie mixtă} implică nedeterminism și asignează fiecărei strategii pure existente o probabilitate, iar jucătorul va selecta aleator una dintre ele fiind luate în calcul probabilitățile. Probabilitatea fiind un element continuu, vor exista o infinitate de strategii mixte pentru un joc, chiar dacă setul de strategii pure este finit. În cazul unui joc cu informație imperfectă, jocul optim va necesita o strategie mixtă.
+\subsubsection{Evaluarea stării jocului}
+Pentru a restrânge și mai mult categoria în care se află jocul studiat, Reversi intră în categoria jocurilor de \emph{două persoane} cu \emph{sumă zero}\footnote{În engl. zero-sum game}. Un joc se spune că este de tipul sumă-zero, dacă suma utilităților jucătorilor referitor la o stare de joc, este zero. În acest tip de jocuri, interesele jucătorilor sunt diametral opuse, câștigul unui jucător va însemna pierderea celuilalt jucător. Șah, X și 0 sunt astfel de jocuri unde rezultatul este câștig, remiză, pierdere. Reversi fiind un joc cu scor, intră în aceași categorie, punctele acumulate de un jucător sunt pierderea celuilalt jucător.
+\subsubsection{Joc perfect}
+Noțiunea de joc perfect înseamnă strategia unui jucător care va duce la cel mai bun rezultat pentru acel jucător, indiferent de strategia adversarului. Dacă de exemplu s-a determinat că prin joc perfect, pornind din starea $s_{0}$ a jocului, jucătorul $p_{i}$ ajunge la remiză, atunci rezultatul va fi o remiză sau un câștig, niciodată nu va pierde pentru că determinarea jocului perfect ia în calcul jocul perfect și din partea adversarului.
+
+\subsection{Istoric}
+Analiza jocurilor cu doi jucători cu informație perfectă, este doar un domeniu de aplicare a teoriei jocurilor. Sunt foarte multe domenii în care se aplică aceste fundamente matematice, multe fiind mai complicate unde jucătorii sunt mai mult de doi și mută simultan, de exemplu. Această știință s-a dezvoltat și a devenit un domeniu de studiu odată cu publicațiile din 1927 ale lui John von Neumann, fiind considerat părintele teoriei jocurilor.\footnote{Primele discuții despre ceea ce numim azi teoria jocurilor, au avut loc în anul 1713, când James Waldegrave a scris o scrisoare în care a prezentat ceea ce azi numim algoritmul minmax cu strategie mixtă pentru jocul de cărți „le Her”.} În 1927 el a enunțat teoria minmax, în lucrarea denumită \emph{„Zur Theorie der Gesellschaftsspiele”}, care stă la baza rezolvării multor jocuri de azi. Teoria jocurilor ocupându-se cu studiul situaților competitive la modul general, se poate aplica în domenii precum: economie, politică, natură, filosofie, psihologie, biologie, etc. Jucătorii pot deveni firme competitive, iar regulile jocului pot deveni regulile pieței, candidații politici fiind în competiție pentru voturi, ofertanții fiind în competiție pentru o licitație. Înarmarea nucleară a țărilor este tot o situație competitivă, unde e mai bine să ai decât să nu pentru că nu cunoști alegerea adversarului, problemă asemănatoare cu \emph{Dilema Prizionerilor}, cu toate că soluția cea mai bună ar fi ca nimeni să nu aibă. Toate aceste situații necesită gândire strategică, folosind informațiile existente pentru a concepe cel mai bun plan pentru a-și împlini fiecare jucător obiectivul, care nu înseamnă neaparat a câștiga. O altă piatră de temelie în teoria jocurilor, a fost publicarea de către John von Neumann și Oscar Morgenstern a lucrării \emph{„Theory of Games and Economic Behavior”}. Această scriere a dus la o intensă aplicare a cunoștințelor de teoria jocurilor în economie. În 1950, John Nash a demosntrat că jocurile finite întotdeauna au un punct de echilibru, unde nici un jucător nu își va putea îmbunătăți rezultatul dacă va devia de la strategia aleasă, demonstrație care i-a adus și un premiu Nobel. Multe probleme și analize ale situaților competitive, presupun rezolvarea unei astfel de probleme, adică găsirea unui echilibru Nash. Jocruile nu sunt neaparat de tipul sumă-zero, precum jocurile de societate, iar găsirea unui echilibru Nash devine o problemă complicată. Analiza jocurilor cu sumă-zero și cu informație perfectă prin explorarea arborelui de joc printr-o metodă minmax, este un echilibru Nash pentru că nici un jucător nu poate devia de la strategia aleasă pentru a obține un rezultat mai bun, pentru că minmax ia în considerare un joc perfect din partea jucătorilor. În rezolvarea jocului Reversi, soluția minmax este echivalentă cu echilibrul Nash.\cite{Shoham, turocy, osborne}
+
+\section{Teoria jocurilor combinatorială}
+Teoria jocurilor combinatorială, este o teorie matematică ce se ocupă cu studiul jocurilor cu doi jucători, unde jucătorii joacă pe ture, adică secvențial, cu scopul de a ajunge la o situație de câștig. Această teorie se rezumă la jocurile cu informație perfectă, precum Reversi, Șah, Go și nu acoperă jocurile cu informație imperfectă precum Poker, Table, acestea din urmă fiind studiul pentru teoria jocurilor clasică.
+
+
+\section{Arbori AND-OR}
+Un arbore AND-OR poate să conțină trei tipuri de noduri: noduri \emph{terminale}, noduri \emph{AND} și noduri \emph{OR} \cite{Giumale}. Un nod \emph{OR} reprezintă o decizie luată de cel ce rezolvă problema, alegerea fiind făcută după o anumită logică, cu scopul de a avansa în spațiul stărilor.\\
+Un nod \emph{AND} reprezintă anumite evenimente ce sunt independente în raport cu cel care rezolvă problema. Grafic se deosebește un nod \emph{AND} de un nod \emph{OR} prin marcarea arcelor ce ies din nod cu un arc de cerc.
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics*[scale = 0.4]{and-or-tree.eps}
+\caption{\small{Exemplu arbore AND-OR.}}
+\label{fig:and_or_tree}
+\end{center}
+\end{figure}
+
+Un nod terminal este fie un nod \emph{soluție}, fie un nod \emph{eșec}. Un nod soluție reprezintă o rezolvare posibilă a problei, iar un nod eșec reprezintă un nod în care problema nu e rezolvabilă. Nodurile AND și OR au succesori, iar nodurile terminale sunt noduri frunză, fără succesori.\\
+Soluția unei probleme al cărei spațiu de stări este un arbore AND-OR, nu este un simplu nod soluție ci este un lanț AND-OR din arbore. Soluția problemei și un nod asociat unei stări soluție, sunt concepte diferite \cite{Giumale}. O soluție este o strategie de rezolvare a problemei, strategie care arată metoda de rezolvare a problemei în prezența unor factori independenți de rezolvator. Arborele poate fi construit înaintea începerii rezolvării problemei, dar soluția va fi determinată în momentul explorării lui.\\
+Pentru explorare, există diferite strategii, arborelee AND-OR oferă doar o reprezentare a stărilor problemei.
+
+\section{Arbori de joc}
+În teoria jocurilor combinatorială, un arbore de joc este un arbore AND-OR, unde nodurile sunt stări ale jocului iar  arcele sunt mutări posibile dintr-o stare în alta. Arborele complet este format din poziția inițială, fiind rădăcina arborelui și toate stările posibile ale jocului, reprezentate prin noduri. Nodurile frunză vor reprezenta sfârșiturile posibile ale jocului.\\
+Arborii de joc sunt un concept important în AI, pentru că o metodă de a alege cea mai bună mutare este de a căută în spațiul stărilor, adică în arbore. Pentru jocuri triviale precum „X și 0” căutarea se poate face cu resurse rezonabile și timp rezonabil, dar când e vorba de un joc mai complex precum Reversi sau Șah, căutarea este imposibilă în timp rezonabil. Pentru astfel de jocuri, apare conceptul de arbore de joc parțial, care va avea atâtea niveluri încât căutarea să se încadreze într-o limită de timp. În afară de jocurile patologice \cite{pathological} care se pare că sunt rare, căutarea mai adâncă în arbore va genera un rezultat mai bun.
+
+\section{Numerotarea nodurilor}
+O posibilă numerotare a arborilor este descrisă în \cite{sheng_hsu} și se numește sistemul decimal Dewey.
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics*[scale = 0.4]{dewey.eps}
+\caption{\small{Numerotare Dewey.}}
+\label{fig:dewey}
+\end{center}
+\end{figure}
+
+De la rădăcină, nodurile într-un arbore de căutare se notează cu o secvență de întregi de forma $a.b.c\cdots$. Rădăcina este considerată o secvență goală, iar în rest, pentru orice nod, pornind de la rădăcină se vor lua pe rând ramurile $a$, apoi de la nivelul următor $b$, apoi $c$, etc.
+
+
+\section{Metode de rezolvare a jocurilor}
+Aici voi prezenta diferite metode de rezolvare a jocurilor la care mă refer în această lucrare, adică jocuri cu informație perfectă cu doi jucători și sumă-zero.
+\subsection{Metode bazate pe forță brută}
+Metodele bazate pe forță brută sunt cele mai folosite în rezolvarea jocurilor. Motivul este că această metodă este singura care poate alege cea mai bună mutare la un moment dat, având în vedere că nu se cunoaște un model matematic pentru joc. Cele mai multe rezolvatoare de jocuri folosesc metode precum $\alpha-\beta$ sau metode îmbunătățite într-un fel sau altul.
+
+\subsubsection{Analiza retrogradă}
+Analiza retrogradă\footnote{În engl. retrograde analysis.} este o metodă în care pentru orice poziție a unui joc specific, sau unui joc din partea de sfârșit \footnote{În engl. end-game.}, numărul de mutări până la cel mai bun câștig posibil, este memorat \cite{games_solved_herik}. De exemplu în jocul de șah, dintr-o anumită poziție, mutările care le va face primul jucător luând în vedere joc perfect din partea adversarului, sunt memorate. Se construiește o bază de date pornind de la nodurile terminale și mergând înapoi în arbore.\\
+După ce baza de date a fost construită, jocul perfect este garantat. Jucătorul MAX va alege mutările cu cel mai scurt drum spre o poziție de mat, iar jucătorul MIN va alege mutările cu drumul cel mai lung spre mat. În ziua de azi această tehnică este des folosită în partea de \emph{end-game} \cite{games_solved_herik}. De exemplu, pentru jocul Șah, au fost analizate toate posibilitățile din \emph{end-game} cu maxim $6$ piese de joc pe tablă. Un exemplu extrem, arată că cea mai lungă poziție care în final duce la mat, dacă amândoi jucători joacă perfect, necesită $262$ de mutări \cite{games_solved_herik}. Acest exemplu a arătat că cel mai complicat lucru nu este de a genera aceste poziții, ci de a le înțelege și de a extrage din ele anumite reguli, informații ce să poată apoi fi asimilate de creierul uman.
+
+\subsection{Metode bazate pe bază de cunoștiințe}
+Ca o adăugare la metodele bazate pe forță brută, este de multe ori benefică incorporarea unei metode de rezolvare care implică o bază de cunoștiințe. Principalul lor avantaj este de a oferi o ordonare a mutărilor ce urmează a fi explorate \cite{games_solved_herik}.
+
+
+\section{Explorarea MINMAX}
+\label{capitol_minmax}
+Algoritmii de explorare a grafurilor (în cazul particular, al arborilor) au o variantă particulară numită explorare MINMAX pentru navigarea în spațiul stărilor a jocurilor prezentate. Algoritmul fiind enunțat prima dată de către John von Neumann, a fost folosit în forma actuală de către Turing în 1950, și Shannon \cite{Shannon}. Cei doi jucători sunt numiți convențional \emph{MIN} și \emph{MAX}. Jucătorul MIN încearcă să minimizeze câștigul lui MAX, adică să-i maximizeze pierderea, iar jucătorul MAX va încerca să-și maximizeze câștigul, adică să-și minimizeze pierderea. Fiind vorba de jocuri cu sumă zero, înseamnă că MAX maximizându-și câștigul, va maximiza și pierderea lui MIN, rolul se inversează pentru MIN. Scopul algoritmului este de a determina cea mai bună mutare ce poate fi efectuată de jucătorul MAX în starea curentă a jocului. Amândoi jucători sunt considerați raționali (vezi \ref{rational}) și vor juca perfect. Orice abatere a lui MIN de la jocul perfect, este în câștigul lui MAX și orice abatere de la jocul perfect a lui MAX, este în favoarea lui MIN.\\
+Spațiul stărilor jocului este un arbore AND-OR numit și arbore MIN-MAX, sau cel mai comun, arbore de joc. Nodul rădăcină este considerat nod MAX, deci toate nodurile OR sunt considerate noduri MAX și toate nodurile AND sunt considerate noduri MIN. Rădăcina $P$ este considerată problema lui MAX, rezolvarea ei înseamnă rezolvarea problemei lui MAX, adică de a găsi cea mai bună mutare. Nodurile terminale desemnează câștigul (eventual pierderea)\footnote{Mai corect spus: utilitatea.} lui MAX. Arcele ce ies din noduri reprezintă mutări posibile, MAX va încerca să găsească o strategie ca să ajungă într-un nod terminal cu câștig maxim, iar MIN contrariul lui MAX. Dacă spațiul stărilor poate fi parcurs în totalitate, atunci strategia este completă \cite{Giumale}. Dacă spațiul stărilor este prea mare, atunci arborele este explorat până la o adâncime limitată, pornind de la nodul MAX curent, va rezulta o strategie incompletă formată doar din câteva mutări în avans. Nodurile devenite terminale prin limitarea căutării, vor fi considerate ca fiind noduri finale, iar un evaluator va spune care dintre jucători este în câștig. În acest caz, bineînțeles, rezultatul jocului este incert, nu se mai poate vorbi de un joc perfect din partea lui MAX decât în cazul în care estimarea scorului este perfectă. Rezultatul va depinde deci de jocul lui MIN.
+La începutul unui joc, problema $P$ este starea inițială a jocului, iar pe parcursul lui, problema $P$ devine starea curentă a jocului. Mutările sunt irevocabile, putem spune deci că din punctul de vedere al algoritmului MINMAX, este neimportant ce s-a întâmplat în trecut.\\
+Valoarea minmax a unui nod a fost enunțată de către David McAllester în felul următor \cite{mcAllester}:
+\begin{definitie}
+Valoarea minmax pentru nodul de pe nivelul $0$ este definit ca fiind o valoare statică a acelui nod. Valoarea minmax de pe nivelul $d$ a unui nod max, este maximul dintre valorile de pe nivelul $d-1$ a fiilor lui. Valoarea minmax de pe nivelul $d$ a unui nod min, este minimul dintre valorile de pe nivelul $d-1$ a fiilor lui.
+\end{definitie}
+
+\begin{pseudocod}
+funcție MINMAX($s$, adâncime)\\
+\{\\
+....returnează MAX($s$, adâncime)\\
+\}\\
+\\
+funcție MAX($s$, adâncime)\\
+\{\\
+....Dacă $succ(s) = \{\emptyset\}$ SAU adâncime = $0$:\\
+........returnează valoarea lui $s$\\
+
+....v = $-\infty$\\
+....pentru\_fiecare nod $\in$ $succ(s)$:\\
+........v := max(v, MIN($nod$, adâncime - 1))\\
+....returnează v\\
+\}\\
+
+funcție MIN($s$, adâncime)\\
+\{\\
+....Dacă $succ(s) = \{\emptyset\}$ SAU adâncime = $0$:\\
+........returnează valoarea lui $s$\\
+
+....v = $\infty$\\
+....pentru\_fiecare nod $\in$ $succ(s)$:\\
+........v := min(v, MAX($nod$, adâncime - 1))\\
+....returnează v\\
+\}
+
+
+\caption{Algoritmul MINMAX}
+\end{pseudocod}
+
+Algoritmul are complexitatea exponențială $O(b^{d})$ în raport cu înălțimea $d$ a arborelui MINMAX și cu numărul $b$ de arce ce ies din noduri, fiind inutilizabil pentru un număr mare de stări \cite{allis, Giumale, games_solved_herik, Rivest}. Ca o metodă de compromis, se poate limita adâncimea de explorare, adică pe $d$ și folosirea unei funcții euristice $h$ pentru evaluarea nodurilor neexpandate. Bineînțeles, dacă euristica $h$ nu este perfectă, atunci algoritmul nu va fi optim.\\
+Este posibil, ca o mutare mai puțin bună a lui MAX să poată duce într-o stare viitoare dincolo de orizontul de explorare, fiind o stare de unde jucătorul MAX nu va mai avea scăpare. Acest fenomen este denumit „efect de orizont” \cite{Giumale} și nu are încă soluție.
+\subsubsection{Jocurile cu șansă}
+Un caz aparte, este cel al jocurilor cu șansă. Și aceste jocuri se pot transpune într-un arbore de joc, unde sunt adăugate noduri suplimentare, numite noduri șansă \cite{Giumale}. Nodurile șansă au o probabilitate și corespund momentului aruncării zarului de exemplu. Fiecare nod șansă va avea o probabilitate, ce reprezintă probabilitatea ca acea combinație de zaruri să se nimerească. Evident, algoritmul de explorare nu poate garanta optimalitatea soluției într-un joc bazat pe șansă \cite{Giumale}.
+% aici ar fi PN search
+% dar mie mi se pare că toate astea merg acolo unde e vorba de optimizare
+%\subsubsection{Tabele de transpoziție}
+
+
+\section{Tăiere $\alpha \beta$}
+Algoritmul $\alpha-\beta$ a fost descoperit individual de mai multe persoane \cite{brokington}. Donald Knuth și Ronald W. Moore au rafinat algoritmul în anul $1975$ enunțând și demonstrația lui.\\
+Minmax este un algoritm de forță brută, nici o optimizare nu se face asupra căutării. Complexitatea lui fiind exponențială, îl face de nefolosit în forma actuală. Exponentul $d$ nu e tocmai mic în jocuri, $58$ pentru Reversi (vezi \ref{capitol_complexitate}). O optimizare evidentă ar fi să nu explorăm toate ramurile, dar cum se va face selecția? S-a observat că anumite noduri nu contribuie la valoarea minmax a problemei, deci nu au de ce să fie explorate. Algoritmul $\alpha-\beta$ face parte din algoritmii de tip \emph{branch-and-bound}. Sunt folosite două limite în procesul de căutare, $\alpha$ și $\beta$, ele fiind transmise în arbore în momentul explorării lui în adâncime. Perechea $\alpha-\beta$ se mai numește și fereastră de căutare, pentru că în orice nod, $\alpha$ reprezintă cea mai mică valoare ce poate afecta valoarea minmax deasupra nodului curent în arbore, iar $\beta$ reprezintă cea mai mare valoare ce poate afecta valoarea minmax. Algoritmul $\alpha-\beta$ se folosește de nodurile explorate pentru a decide tăierea altor noduri. Dacă de exemplu știm sigur că valoarea determinată până acum este mai mult de $10$, iar căutarea curentă a unei ramuri până acum arată ca poate returna un scor de cel mult $9$, atunci nu mai este nici un motiv pentru a continua căutarea pe acea ramură.
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics*[scale = 0.4]{alpha_cutoff.eps}
+\caption{\small{Tăiere $\alpha$.}}
+\label{fig:alpha_cutoff}
+\end{center}
+\end{figure}
+
+Presupunem (exemplificare în figura \ref{fig:alpha_cutoff}) că prima ramură a fost deja explorată, iar valoarea nodului $1$ este $15$. Reamintim că la rădăcina arborelui este jucătorul MAX, care va maximiza câștigul. Înseamnă că pentru a se schimba valoarea nodului rădăcină, va trebui ca valoarea nodului de pe ramura următoare să fie mai mare decât valoarea nodului $1$, adică $15$. Vom explora în continuare nodul $2$, pentru că încă nu cunoaștem suficient din arbore. Presupunem că nodul $2.1$ returnează o valoare $< limita$, să zicem $10$. Nu este nevoie să evaluăm în continuare alt nod succesor nodului doi. Motivul, este că acum ne aflăm la un nivel MIN, unde se va minimiza câștigul, deci cea mai bună alegere a jucătorului MIN până în acest moment este $10$, iar o valoare mai bună pentru el trebuie să fie mai mică ca $10$. Dar cea mai buna valoare posibilă pentru nodul $2$ este $< limita$, deci nici nod succesor a lui $2$ nu va putea schimba valoarea minmax pentru rădăcină. Deci, în continuare pentru a explora nodul $3$, se va considera prima ramură ca fiind cea mai bună soluție.\\
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics*[scale = 0.4]{beta_cutoff.eps}
+\caption{\small{Tăiere $\beta$.}}
+\label{fig:beta_cutoff}
+\end{center}
+\end{figure}
+
+În cazul unui nod MIN, avem (figura \ref{fig:beta_cutoff}). Presupunem că s-a explorat nodul $1.1$ a nodului MIN $1$ și s-a obținut cea mai bună valoare, $10$ ca și limită. Algoritmul va explora în continuare nodul $1.2$ și presupunem că nodul $1.2.1$ va returna o valoare $ > limita$, de exemplu $15$. Nu mai este nevoie să explorăm nodul $1.2.2$ și nici orice alt nod care ar mai exista ca descendent a lui $1.2$, pentru că deja cea mai bună valoare a lui $1.2$ este $15$ care e $> limita$. Prin urmare, vom lua prima ramură ca fiind cea mai bună soluție curentă \cite{sheng_hsu}. În timpul căutării, pentru un nod MAX, valoarea curentă cea mai bună este cel puțin $\alpha$, iar 
+pentru un nod MIN, valoarea curentă cea mai bună este cel puțin $\beta$.
+
+O enunțare a algoritmului $\alpha-\beta$, o adaptare după \cite{dana_nau_game_tree_search}.
+\begin{pseudocod}
+funcție MINMAX$\alpha \beta$($s$, adâncime, $\alpha$, $\beta$)\\
+\{\\
+....returnează MAX($s$, adâncime, $\alpha$, $\beta$)\\
+\}\\
+\\
+funcție MAX($s$, adâncime, $\alpha$, $\beta$)\\
+\{\\
+....Dacă $succ(s) = \{\emptyset\}$ SAU adâncime = $0$:\\
+........returnează valoarea lui $s$\\
+
+....v = $-\infty$\\
+....pentru\_fiecare nod $\in$ $succ(s)$:\\
+........v := max(v, MIN($nod$, adâncime - 1, $\alpha$, $\beta$))\\
+........Dacă $v \geq \beta$:\\
+............returnează v\\
+........$\alpha$ := max($\alpha$, v)\\
+....returnează v\\
+\}\\
+
+funcție MIN($s$, adâncime, $\alpha$, $\beta$)\\
+\{\\
+.... La fel ca la MAX, dar cu rolurile $\alpha$, $\beta$ inversate.\\
+\}
+
+
+\caption{Algoritmul MINMAX cu $\alpha \beta$}
+\end{pseudocod}
+
+Folosind tehnicile descrise, tăierea $\alpha - \beta$ poate fi folosită pentru a computa valoarea minmax a unui arbore de joc într-un timp $O(\sqrt{b^{d}})$ față de $O(b^{d})$ cât e la minmax. Diferența este foarte mare, având în vedere că de exemplu la Reversi, factorul $d = 58$. Un alt mod de a privi \cite{mcAllester}, este că algoritmul $\alpha - \beta$ permite o explorare a unui număr dublu de noduri în față de minmax.\\
+Algoritmul este corect în momentul în care se pornește explorarea cu fereastra $(\alpha = -\infty, \beta = \infty)$. 
+Domonstrația corectitudinii algoritmului, putem găsi în \cite{Giumale, mcAllester, sheng_hsu}.\\
+Se observă că același arbore, dar cu ordonări diferite ale tăierii $\alpha - \beta$. In cazuri diferite de ordonare, se vor explora un număr diferit de noduri pentru a calcula valoarea minmax. Se crede că dacă pornind de la un nod, se vor explora mai întâi ramurile cu cea mai bună \emph{utilitate}, atunci și numărul de tăieri va fi maxim, deci explorarea ar dura mai puțin. Asta ar însemna ca pentru un nod MAX să evaluăm prima dată ramura cu valoarea cea mai mare, iar într-un nod MIN, să evaluăm mai întâi ramura cu valoarea cea mai mică.\\
+În \cite{sheng_hsu}, avem o analiză pentru cazul optim de ordonare a arborelui pentru a atinge limita de $\sqrt{b^{d}}$. Tot în \cite{sheng_hsu}, se ajunge la concluzia că ordonarea perfectă (adică ordonare după utilitatea fiecărui nod) nu e neaparat cea mai bună, cum s-ar crede intuitiv, iar $\alpha - \beta$ ar avea un timp optim pentru o permutare a arborelui, care nu e chiar evidentă.\\
+Complexitatea algoritmului este deci $\Omega(\sqrt{b^{d}})$, având în vedere că limita este atinsă doar în cazul unei ordonări optime.\\
+În cazul în care arborele de joc ar fi o orodnat aleator, complexitatea explorării $\alpha - \beta$ ar fi 
+$\Theta((\frac{b}{log_{2}b})^{d})$ pentru $b > 1000$, iar pentru valori moderate ale lui $b$, complexitatea este $O(b^{\frac{3 \cdot d}{4}})$, ceea ce permite mărirea cu $25\%$ a adâncimii de explorare față de algoritmul MINMAX, la același număr de noduri explorate \cite{Giumale}.
+\label{sec_ordering}
+
+\section{Îmbunătățiri ale algoritmului $\alpha \beta$}
+Cu toate că $\alpha \beta$ oferă un timp de explorare mult îmbunătățit față de MINMAX și prin asta devenind algoritmul standard de explorare în spațiul stărilor, un timp de explorare $b^{\frac{d}{2}}$ nu este suficient. În \ref{sec_ordering} am discutat despre importanța ordonării mutărilor înainte de explorare. S-au dezvoltat o serie de algoritmi bazați pe această observație, vom descrie pe scurt câțiva.
+\subsection{Adâncire iterativă}
+Idea acestui algoritm\footnote{În engl. iterative deeping.} este de a explora la o adâncime $k$ înainte de a explora la o adâncime $d$, unde $k < d$. Dupa ce s-a atins nivelul $k$, se forțează o evaluare a sțarilor obținute, după care se reia o explorare până la nivelul $k+s$. În practică, de cele mai multe ori, valorile $k$ și $s$ sunt egale cu $1$. Astfel, se va explora doar un nivel, după care se va explora $2$ niveluri, etc. Motivul, este de a folosi informația acumulată la explorarea până la nivelul $k$, pentru a genera o bună ordonare a mutărilor înainte de a explora la nivelul $k+1$. Astfel, s-a arătat în practică \cite{brokington} că se va genera un arbore puternic-ordonat, deci algoritmul $\alpha \beta$ va tinde spre optim. Metoda are avantaje și în competiții, unde timpul de gândire pentru o mutare este fix. Din moment ce nu se poate prezice când se va opri algoritmul $\alpha \beta$, ar putea rezulta o mutare catastrofică. Cu o adâncire iterativă, avem tot timpul rezultatul de la pasul anterior, care poate fi luat în considerare în cazul în care timpul a expirat iar explorarea până la nivelul $d$ nu s-a terminat. În practică, numărul de noduri explorate la adâncimea $d$, folosind această tehnică, este semnificativ mai mic comparat cu o explorare standard până la nivelul $d$.\\
+Dacă euristica construită va fluctua puțin la diferențe mici de adâncire, atunci într-o explorare iterativă, am putea îngusta fereastra de căutare, din nou optimizând algoritmul.
+\subsection{Tehnici bazate pe ordonarea mutărilor}
+
+\subsubsection{Ordonarea statică}
+\label{killer_moves}
+Prima metodă de ordonare a mutărilor pentru a obține o îmbunătațire a algoritmului $\alpha \beta$ presupune ordonarea lor după valoarea nodurilor succesoare. Nodul care a generat valoarea cea mai mare este explorat primul, iar nodul care a generat valoarea cea mai mică, este pus la coadă. De exemplu în Reversi, implementat și în FPGA, am putea considera o ordonare bună mutările în care se adaugă un disc în colț, pentru că devine stabil\footnote{Metodă cunoscută sub numele de \emph{killer response}.}. Ordonarea statică a funcționat bine \cite{brokington} pentru anumite jocuri, chiar și Othello, dar nu a funcționat bine în Șah. Problema este că metoda este statică și nu se folosește de informațiile adunate pe parcurs.
+
+\subsubsection{Tabele de transpoziție}
+Informații specifice pentru o căutare ar putea fi salvate în tabele de transpoziție. În algoritmul $\alpha \beta$ avem diferite informații despre un nod, precum cel mai bun scor, cea mai bună mutare de la acea poziție, adâncimea la care a fost căutat. Toate aceste informații ar putea fi memorate în tabele de transpoziție. Aceste tabele sunt în mod normal implementate ca tabele \emph{hash}, cu funcții de \emph{hash} ușor de implementat. Dimensiunea tabelei se poate alege după resursele disponibile. Acest tip de tabele pot fi apoi folosite pentru a ordona mutările sau a găsi duplicate de stări de joc \cite{brokington}. În timpul jocului, o anumită stare de joc poate fi întâlnită prin selectarea mai multor strategii diferite. Astfel de poziții sunt și în Reversi. În acest joc, precum și în șah, s-ar putea exploata si mai mult, pentru că putem avea simetrii pe tabla de joc. Având tabela de transpoziție, putem căuta acea stare de joc în tabelă într-un timp $O(1)$. Dacă este găsită, atunci înseamnă că știm și valoarea minmax a acelui nod și nu mai avem motiv să continuăm explorarea.\\
+Un mod de folosință și mai bun pentru aceste tabele, este în momentul în care se folosesc împreună cu o explorare iterativă. De obicei, rezultatul funcțiilor euristice de evaluare a stărilor de joc vor varia puțin de la nivelul $k$ la nivelul $k+1$. Putem deci să pornim o explorare la nivelul $k+1$ folosind informația de la nivelul $k$. In tabelă, la indexul dat de nodul respectiv\footnote{De fapt e indexul dat de funcția de \emph{hash} aplicată nodului.} se va afla mutarea cea mai bună. Astfel, o vom considera ca cea mai bună ordonare și explorarea va porni cu acea ramură.
+
+\subsection{Fereastră de căutare nulă}
+O îmbunătățire a algoritmului $\alpha \beta$ s-a arătat că se poate obține folosindu-ne de o căutare la o adâncime mai mică decât $d$. Dacă avem și o bună ordonare a mutărilor, atunci explorarea se va apropia și mai mult de cazul optim. Având în vedere că primul nod explorat e considerat ca fiind cel mai bun, înseamnă că restul le considerăm inferioare. Metoda ferestrei nule\footnote{În engl. \emph{null window.}} se folosește de această presupunere. Presupunem că valoarea minmax obținută pentru prima mutare este \emph{gamma}. În mod normal ar urma o explorare a nodului următor cu fereastra (\emph{gamma}, beta). Dar cum prima mutare e considerată cea mai bună, algoritmul ferestrei nule va porni explorarea nodului următor cu fereastra (\emph{gamma}, \emph{gamma+1}). Dacă mutarea este într-adevăr inferioară, atunci rezultatul va cel mult egal cu \emph{gamma} și nu mai trebuie făcut nimic. Dacă valoarea returnată va fi mai mare ca și \emph{gamma}, atunci înseamnă ca mutarea e superioară și se va explora din nou cu o fereastră mai mare.\\
+Bineînțeles, acest algoritm va da rezultate bune doar dacă avem o bună ordonare a mutărilor \cite{brokington}. \emph{NegaScout} este un algoritm ce folosește căutare cu fereastră nulă pentru a demonstra dacă mutarea care e testată este mai bună decât cea care a fost deja aleasă la o căutare normală. În practică, algoritmul NegaScout obține pentru jocul Șah, un plus de performanță de $10\%$ față de o căutare cu fereastra completă.
+
+\subsection{Căutare selectivă}
+\label{cautare_selectiva}
+Am văzut cum un algoritm va căuta exhaustiv în spațiul stărilor pentru a determina o mutare bună. Dar se pune problema, cum sunt capabili oamenii de un joc bun? Bineînțeles, campionii de Reversi nu vor analiza toate mutările precum face un algoritm, fie el cu $\alpha \beta$. Răspunsul ar fi că mintea umană este cel mai bun evaluator existent și are capacitatea de a tăia anumite ramuri din arborele de joc fără a fi măcar explorate. Algoritmii prezentați până acum sunt corecți, valoarea determinată de ei poate fi demonstrată și nu poate fi alta.\footnote{Dacă considerăm un evaluator perfect.}\\
+Algoritmul \emph{Multi-ProbeCut} \cite{buro_mpc_curs, buro_mpc} încearcă să facă exact acest lucru, de a tăia anumite ramuri înainte de a fi explorate. Diferența mare, este că $\alpha \beta$ standard va tăia ramuri după ce a explorat și a văzut că poate să facă acest lucru. MPC\footnote{Multi-ProbeCut.} va tăia ramuri înainte de a fi explorate. Procesul este probabilistic, un nod nu va mai fi explorat dacă probabilitatea de a fi o mutare proastă este suficient de mare. Ca mod de folosire, se va defini o adâncime $d' < d$ care este adâncimea la care se va face tăierea. Până la $d'$, algoritmul va face o explorare $\alpha \beta$ obișnuită. Obținând valoarea minmax $v$ pentru un nod, se va estima care ar putea fi valoarea $v'$ dacă nodul ar fi explorat până la adâncimea $d$. Dacă valoarea estimată $v$ pare o mutare proastă, atunci explorarea va înceta.\\
+Această metodă presupune existența unui evaluator foarte bun, care să fie cât de cât uniform, să nu varieze brusc. Valorile $d'$ și $d$ se determină cel mai bine în practică. Rezultate bune se obțin și dacă se fac explorări selective multiple, de exemplu $d', d'', d$.\\
+Pentru jocul Othello, MPC are rezultate remarcabile \cite{buro_mpc}. Algoritmul implementat cu MPC de către Michael Buro, a folosit doar $4\%$ din timpul aceluiași algoritm fără MPC, amândoi fiind la fel de puternici. Dacă implementarea cu MPC este lăsată să exploreze un timp comparativ cu cel al implementării fără MPC, atunci cel fără MPC va câștiga aproximativ $78\%$ din partide, pentru că va putea explora mai adânc.
+
+
+\chapter{Analiza jocului Reversi}
+Jocul Reversi este un joc în prezent nerezolvat. Pe o tablă 6x6 a fost rezolvat „ultra-ușor”, al doilea jucător fiind câștigător. Reversi face parte din jocurile considerate campioane, alături de Șah și Go, care în prezent nu au rezolvare. Dintre acestea, Go este cel mai complex și se pare că nu va fi rezolvat încă zeci de ani de acum în colo \cite{allis, games_solved_herik}.
+
+\section{Rezolvarea jocurilor}
+Rezolvarea unui joc se referă în general la determinarea rezultatului în cazul în care ambii jucători joacă perfect.
+Se consideră 3 tipuri de rezolvare a jocurilor \cite{allis, games_solved_herik}. 
+\subsubsection{Jocuri rezolvate \emph{ultra-ușor}}
+Reprezintă acele jocuri pentru care s-a determinat rezultatul pentru starea inițială a jocului $s_{0}$.
+\subsubsection{Jocuri rezolvate \emph{ușor}}
+Reprezintă acele jocuri, pentru care s-a determinat, pentru poziția inițială $s_{0}$, o strategie de joc pentru a câștiga \emph{cel puțin} cu valoarea minmax, folosind resurse rezonabile.\footnote{În engl. game-theoretic value.}
+\subsubsection{Jocuri rezolvate \emph{puternic}}
+Reprezintă acele jocuri pentru care s-a determinat o strategie optimă de câștig pentru orice stare a jocului, folosind resurse rezonabile. De exemplu cazul jocului Nim demonstrat de Knuth.
+
+\section{Tipul jocului}
+Reversi/Othello face parte din clasa de jocuri cu informație perfectă cu doi jucători și sumă zero. Jocurile se mai împart în două mari categorii, necesare pentru determinarea complexității și analiza lor.
+\subsection{Jocurile convergente}
+Un joc este considerat convergent aunci când spațiul stărilor descrește odată cu înaintarea în joc. În general, jocurile convergente pornesc cu multe piese pe tabla de joc, iar în moment ce jocul progresează, adică înaintează în timp, piesele sunt treptat scoase de pe tabla de joc \cite{games_solved_herik}. Acest aspect este foarte important, pentru că jocurile convergente pot avea bază de date pentru \emph{end-game}.\footnote{Din engl., faza de sfârșit a jocului.} Șah-ul de exemplu este un joc convergent. Fiind un joc convergent, spre sfârșitul jocului putem mult mai ușor cunoaște finalul. Jocul de Șah este rezolvat în momentul în care mai sunt 6 piese pe tabla de joc, oricare combinație ar fi.\footnote{Cei doi regi sunt luați în calcul.} În \cite{games_solved_herik} avem descrisă poziția de Șah din 6 piese cu cel mai lung drum până la mat, dacă ambii jucători joacă perfect.\footnote{Poziția necesită 262 de mutări până la mat.}
+\subsection{Jocurile divergente}
+Jocurile divergente de obicei pornesc cu foarte puține piese, iar pe parcursul jocului piesele se adaugă pe tabla de joc, rezultând într-o explozie a spațiului stărilor spre final. Acest tip de jocuri sunt imune analizei retro sî a contrucției de baze de date cu jocurile de final, datorită numărului de combinații foarte mare \cite{games_solved_herik}. În \cite{allis} avem o definiție formalizată matematic a convergenței/divergenței jocurilor, considerând $n$ clase disjuncte, fiecare clasă formată din toate stările jocului formate din $m$ piese. Reversi/Othello face parte din clasa jocurilor divergente, pentru că la fiecare mutare se adugă discuri pe tabla de joc, în final spațiul stărilor fiind în expansiune. În afară de faza de sfârșit a jocului, adăugând un disc pe tabla de joc, numărul de mutări legale este în creștere.
+
+\section{Complexitatea}
+\label{capitol_complexitate}
+Complexitatea în jocuri, determină două mărimi: complexitatea pentru spațiul stărilor și complexitatea arborelui de joc.
+\subsection{Complexitatea pentru spațiul stărilor}
+Complexitatea spațiului stărilor este definită ca numărul de stări posibile de joc la care se pot ajunge pornind dintr-o oarecare stare, de exemplu starea inițială $s_{0}$. De exemplu, pentru un joc ca și „X și 0”, această complexitate se poate determina ușor matematic. O limită superioară ar fi dacă calculăm $3^{9}$, observând că fiecare pătrat poate conține un X sau un 0 sau să fie liber. Din acest număr se scad pozițile ilegale de joc și rezultă 5.478 stări de joc posibile \cite{allis}.
+
+\subsection{Complexitatea arborelui de joc}
+Complexitatea arborelui de joc, este definită ca și numărul total al nodurilor frunză ce formează arborele de joc, pornind de la starea inițială $s_{0}$ a jocului. De exemplu pentru un joc, J fiind starea inițială, dacă din J avem 20 de mutări posibile, iar apoi din fiecare mutare posibilă avem încă 30 de mutări posibile, înseamnă ca la cel mai jos nivel al arborelui am avea 600 de noduri terminale. Complexitatea arborelui de joc în acest exemplu este 600 \cite{allis}. Dacă dorim calcularea complexității arborelui de joc pentru un joc complicat precum Șah sau Reversi, este mult mai complicat și vom putea doar spune o limită superioară a acestuia. Complexitatea se aproximează folosind o medie a numărului de noduri ce pot porni dintr-un nod. De exemplu pentru jocul „X și 0”, avem o adâncime a arborelui de maxim 9 niveluri, iar la fiecare nivel $i$, factorul de lațime a arborelui este de $9 - i$, calculând complexitatea ne va da $9! = 362880$. Se observă că această complexitate este mai mare ca și spațiul stărilor, pentru că în arborele de joc se vor repeta multe stări ale jocului.
+
+\section{Determinarea complexității prin analiză\\ \hbox{„Monte Carlo”}}
+O limită superioară pentru spațiul stărilor în jocul Reversi, ar fi $3^{64}$ adică aproximativ $10^{30}$. Acest număr este obținut prin observația că tabla de joc are mărimea 8x8, adică 64, iar pe fiecare poziție se poate afla un disc negru, alb sau nimic. Bineînțeles, o parte din acest număr reprezintă stări de joc invalide, adică la care nu se poate ajunge prin nici o combinație. De exemplu pentru fiecare stare de joc trebuie să avem cele 4 poziții din mijloc ocupate, pentru că asta este starea inițială a jocului. O analiză Monte Carlo, ar presupune generarea unui număr de stări, de exemplu $100.000$, complet aleatoare. Considerăm existența unei funcții $\pi(s)$ care are ca rezultat \emph{adevărat} sau \emph{fals}, indicând dacă starea de joc generată este validă sau nu. Funcția este construită după mai multe observații ale jocului precum și regulile lui. De exemplu nu putem avea grupuri de discuri care să nu aibă legătură între ele, deoarece în Othello trebuie adaugat un disc în vecinătatea unui alt disc. Victor Allis \cite{allis} a făcut o astfel de analiză și a arătat că pentru Reversi/Othello, complexitatea spațiului stărilor este de aproximativ $10^{28}$.\\
+Complexitatea arborelui de joc este aproximativ $10^{58}$, 10 fiind considerat numărul mediu de mutări posibile la fiecare stare. Adâncimea arborelui, $58$, a fost determinată prin analiza multor partide care în medie durează $58$ de mutări. \cite{allis}
+
+
+\chapter{Placa de dezvoltare Spartan3E}
+\section{Logică programabilă, FPGA}
+\label{capitol_fpga}
+\subsection{Scurtă descriere}
+Un FPGA\footnote{Field Programmable Gate Array.} este un dispozitiv ce permite programarea expresiilor logice. Ca și capacitate, un FPGA este extrem de mare comparativ cu circuitele logice programabile de genul PLD, CPLD. În mod obișnuit, un FPGA este folosit pentru a construi un prototip hardware ce apoi va urma să fie implementat într-un ASIC\footnote{Application Specific Integrated Circuit.}. Totuși, tot mai des FPGA-urile sunt folosite ca produs final, datorită flexibilității lor foarte mari.\\
+La începutul anilor $1980$, cele mai multe circuite logice erau implementate în tehnologie LSI\footnote{Large Scale of Integration.}. Aceste circuite erau: microprocesoare, diferite \emph{controlere}, etc. Bineînțeles, fiecare sistem avea nevoie de o logică suplimentară\footnote{În engl. glue logic.} pentru comunicarea între dispozitive. Pentru acest lucru erau construite circuite integrate specializate care îndeplineau funcția respectivă, dar procesul era foarte scump și inflexibil, logica diferind mult de la un produs finit la altul. Având această problemă, Xilinx, o fompanie de startup, a introdus în anul $1984$ tehnologia FPGA ca o alternativă la circuitele integrate personalizate pentru implementarea logicii de alipire. Datorită programelor de tip CAD, astăzi circuitele logice pot fi implementate foarte ușor fără diferite procese fizice complicate. \cite{Synthesis_arithmetic_circuits}\\
+\subsection{Arhitectura FPGA}
+Arhitectura de baza a FPGA-ului constă într-o matrice bidimensională de blocuri logice și bistabile. Omul va trebui să descrie logica pentru fiecare bloc, să descrie intrările/ieșirile blocurilor precum și conexiunile între blocuri.
+\subsubsection{Programarea}
+Tipul de programare folosit de FPGA-urile de la Xilinx (cele mai răspândite), este bazat pe memoria SRAM. Conexiunile FPGA se fac folosind porți de transmisie, multiplexoare, toate fiind controlate de celule SRAM. Singurul dezavantaj al acestei metode ar fi memoria SRAM care va ocupa cel mai mult. Un astfel de circuit va putea fi configurat de un număr infinit de ori. \cite{Synthesis_arithmetic_circuits}
+\subsubsection{Look-Up Table}
+\label{hard_LUT}
+Felul în care funcțiile logice sunt implementate în blocurile logice este specific FPGA-urilor. Tabelele de LookUp sunt implementate ca o memorie, sau multiplexoare și memorie. O memorie de dimensiunea $2^{n}$x$1$ poate implementa orice funcție logică cu $n$ intrări. În practică, valorile folosite pentru $n$ sunt $2,3,4,5$. O tabelă $n$-LUT, adică implementată cu o memorie de mărimea $2^{n}$, este implementarea directă a unei tabele de adevăr.
+\subsubsection{Bloc logic}
+Cel mai simplist, un bloc logic este implementat folosind o tabelă LUT cu $4$ intrări, care va putea implementa o logică combinațională de $4$ variabile și un bistabil care opțional va memora ieșirea funcției. Un FPGA este compuns dintr-o matrice foarte mare de astfel de blocuri logice.
+\subsubsection{Resurse FPGA Xilinx}
+Resursele de bază într-un FPGA de la Xilinx sunt:
+\begin{itemize}
+\item Blocuri logice configurabile, care vor conține logica combinațională și bistabile.
+\item Blocuri I/O care vor face legătura FPGA-ului cu exteriorul.
+\item PI, adică interconexiuni programabile.
+\item Blocuri de memorie RAM (BRAM).
+\item Alte resurse: circuite tri-state, circuite speciale pentru propagarea semnalului de ceas, etc.
+\end{itemize}
+
+Arhitecturile noi, chiar și Spartan3, pe lângă aceste resurse standard au în dotare și multiplicatoare hardware dedicate, DCM-uri \footnote{Digital Clock Manager.}, un circuit specializat cu care se poate modifica semnalul de ceas: multiplica, divide, defaza, etc. VirtexII are înclus chiar și un procesor PowerPC care poate fi folosit.
+
+\subsubsection{Slice-urile}
+Un CLB (Configurable Logic Block) dintr-un FPGA este compus din slice-uri. Spartan3 are de exemplu 4 slice-uri per CLB. Fiecare slice conține două LUT-uri și două elemente de memorare. Pe lângă operația de generator de funcții, un LUT poate fi folosit ca o memorie de 16x1 biți. Mai mult, cele două LUT-uri pot fi combinate pentru a forma o memorie de 16x2 biți sau 32x1 biți memorie sincronă, sau 16x1 biți memorie dual-port. LUT-urile pot fi folosite și ca registre de deplasare pentru capturarea datelor.
+\subsubsection{Elementele de stocare}
+Elementele de stocare dintr-un LUT pot fi folosite ca bistabile D sincrone, sau senzitive pe nivel.
+\subsubsection{Resurse aritmetice}
+FPGA-urile moderne au circuistică suplimentară pentru a optimiza operațiile aritmetice. De exemplu, linii dedicate pentru propagarea transportului la adunare.
+
+\subsection{BRAM}
+\label{bram}
+FPGA-urile Xilinx au incorporate memorii RAM denumite „Block RAM”. Aceste memorii sunt organizate în coloane în chip. Placa ce o dețin, Spartan3E cu un FPGA XC3S500E are două coloane de BRAM a câte $10$ blocuri fiecare, în total $20$ de blocuri RAM care în total sunt 360K biți de memorie RAM incorporată în FPGA, foarte rapidă.\cite{xilinx_ug331}\\
+Fizic, fiecare bloc de RAM are două porturi de acces complet independente, fiecare port suportă operația de citire și de scriere. Fiecare port este sincron cu propriul lui semnal de ceas și fiecare port deține semnalele lui de control. Astfel, memoria poate fi folosită ca și memorie dual port. Diferite programe de sintetizare, precum și XST\footnote{Xilinx Synthesis Tool.} sunt capabile să infereze memorie BRAM pe baza descrierii hardware. Astfel, o descriere hardware care respectă regulile inferării de memorie block RAM, va duce la generarea unui anume \emph{bitstream} care va folosi resursa de block RAM din FPGA. \cite{xilinx_ug331}
+
+
+\section{Spartan3E}
+\label{placa}
+Placa de dezvoltare „Spartan3E Starter Kit” conține un FPGA XC3S500E.\\
+Resursele FPGA-ului sunt \cite{xilinx_spartan_datasheet}:
+\begin{itemize}
+\item 1164 blocuri logice.
+\item în total $4 \cdot 1164$ adică 4656 de slice-uri.
+\item 360K biți de memorie bloc RAM.
+\item 20 de multiplicatoare dedicate (două intrări a câte 18bit per multiplicator).
+\item 4 DCM-uri.
+\end{itemize}
+
+Placa de dezvoltare mai conține \cite{spartan_starter_kit}:
+\begin{itemize}
+\item O memorie 4Mbit Platform Flash, memorie ROM configurabilă.
+\item un CPLD de 4 macrocelule, folosibil.
+\item 64MB DDR SDRAM, linia de date fiind de 16 biți, la o frecvență de 100+ Mhz.
+\item 16MB memorie Flash accesabilă paralel. (Poate memora configurația FPGA-ului)
+\item 16Mbit memorie Flash serială.
+\item Ecran LCD 2x16 caractere.
+\item interfață PS/2.
+\item interfață VGA.
+\item 10/100 Ethernet PHY.
+\item două interfețe RS232 9 pini.
+\item oscilator 50Mhz.
+\item patru convertoare digital-analogice.
+\item două convertoare analogice-digitale.
+\item LED-uri, butoane.
+\end{itemize}
+
+
+\chapter{Proiectare hardware}
+
+\section{HDL, Verilog, scurtă introducere}
+Proiectarea hardware a acestui proiect, a fost făcută în limbajul Verilog HDL \cite{peter_verilog}. Cu astfel de limbaje de descriere hardware, se poate descrie logica unor circuite complexe. Se pot scrie procese combinaționale și procese secvențiale. Ca și mod de gândire, toate procesele secvențaile se vor întâmpla în paralel, la apariția semnalului de sincronizare. Există atribuiri blocante și non-blocante. Ca și mod de gândire, cele non-blocante pot fi considerate că se întâmplă în paralel, iar cele blocante sunt practic o cascadare a nivelurilor logice, intrarea unui nivel fiind rezultatul unui nivel anterior. Un subset din aceste declarații în Verilog este sintetizabil. Asta înseamnă că un program de sinteză va putea transforma acea descriere hardware într-un \emph{netlist}. Un netlist este o ierarhie de structuri logice, porți logice, interconexiuni între ele. Mai departe, acea structură de porți logice, se poate transforma într-o listă de interconexiuni pentru un FPGA. (vezi \ref{capitol_fpga})\\
+
+\section{Paradigme de proiectare}
+\label{hardware_gooddesign}
+Proiectarea hardware în Verilog se poate face la $4$ niveluri de abstractizare. 
+\begin{itemize}
+\item Comportamental, unde se va descrie efectiv comportamentul funcției logice.
+\item RTL\footnote{Register Transfer Level.} folosește registre conectate prin expresii booleene.
+\item La nivel de porți logice. Adică interconexiuni directe între primitive logice.
+\item La nivel de tranzistor. Tranzistoare MOS în interiorul porților.
+\end{itemize}
+În acest proiect, s-a proiectat comportamental și RTL.\\
+Ca și în orice proiectare, sunt anumite paradigme, reguli de aur pentru o bună proiectare. O bună proiectare va permite ca circuitul să funcționeze la o frecvență mai mare. O proiectare proastă va funcționa la o frecvență mică, vor apărea erori de sincronizare, latențe prea mari și diferite între nivelurile logice, etc. \cite{high_performance_fpga, peter_verilog, jack_marshall}
+Cu toate că scopul meu a fost ca funcționarea acestui proiect să fie la  ofrecvență de 50MHz, lucru care probabil nu este chiar greu de realizat, voi aminti aici câteva reguli care m-au ajutat foarte mult în proiectare:
+\subsection{Identificarea blocurilor critice}
+Este foarte important de a determina blocurile cu niveluri logice cascadate. Aceste blocuri vor încetini tot circuitul, datorită propagării semnalului. În general trebuie evitată construirea a astfel de blocuri. Pentru a scăpa de astfel de ierarhii, este recomandată introducerea stagiilor de \emph{pipeline}, astfel încât circuitul să fie secvențial iar rezultatul să fie obținut în mai multe faze care vor fi memorate în registre. La fiecare ciclu de ceas se va calcula o fază a rezultatului, dar toate vor fi în paralel. În acest mod, la fiecare impuls de ceas vom avea un rezultat final. Astfel se poate crește frecvența circuitului, pentru că cea mai lungă cale de propagare va fi împărțită de registre. \cite{high_performance_fpga}
+\subsection{Memorarea ieșirilor}
+O altă regulă este de a memora ieșirile blocurilor, adică de a avea un nivel de registre la ieșiri în care să fie memorat rezultatul. Acest lucru va crește mult flexibilitatea și ușurința proiectării. În acest proiect fiecare bloc respectă această regulă. \cite{xilinx_coding_practices}
+\subsection{Semnale de ceas, reset}
+\subsubsection{Semnalul de reset sincron}
+În FPGA este de recomandat utilizarea semnalului de reset sincron pentru module în loc de semnal de reset asincron. De exemplu, conform \cite{xilinx_coding_practices} un multiplicator implementat cu stagii de pipeline într-un FPGA Virtex4 și cu reset asincron, va funcționa la o frecvență de 200MHz, iar dacă descrierea hardware se modifică pentru a funcționa cu un reset sincron, circuitul va funcționa la 500MHz. Acest lucru se întâmplă pentru că blocurile de multiplicare sunt construite cu un reset sincron, iar dacă se folosește un reset asincron, atunci logica va trebui să folosească alte resurse din FPGA, totul devenind mai lent. Folosirea resetului sincron va reduce și numărul de slice-uri folosite (vezi \ref{capitol_fpga}).
+
+\subsubsection{Semnalul de sincronizare}
+O regulă de aur este folosirea unui semnal \emph{enable} pentru a valida/invalida un modul în loc de compunerea semnalului de sincronizare cu alte semnale. Compunerea semnalului de sincronizare prin porți logice va duce la întârzieri a semnalului, rezultând probleme de sincronizare, etc.
+
+
+\subsection{Sumatoare arborescente sau înlănțuite}
+O problemă foarte importantă cu care m-am confruntat, a fost adunarea mai multor termeni. Un sumator de $n$ termeni proiectat într-o structură liniară, adică un lanț, va avea performanțe foarte scăzute pentru că rezultatul va apărea abia după o propagare după $n$ niveluri. Dacă proiectăm sumatorul sub ca o structură arborescentă, complexitatea lui va fi doar logaritmică. Dar, un sumator arborescent va consuma mai multă putere și mai multe resurse.\\
+Totuși, un lucru interesant \cite{xilinx_coding_practices}, este că în familia de FPGA-uri Virtex4, sunt anumite blocuri speciale denumite DSP48, proiectate pentru prelucrarea datelor, care au o structură lanț, dar foarte optimizate și vor avea performanțe mult mai bune ca un sumator arborescent standard.
+
+\subsection{Evitarea latch-urilor}
+Este întotdeauna de dorit evitarea inferării de latch-uri. Latch-urile sunt sensibile pe palier, nu pe fron ca și bistabilele, generând multe probleme. Pentru a evita latch-urile proiectarea trebuie să fie atentă, petntru a nu necesita elemente de memorie în plus și fără voia noastră. De exemplu într-o structură \emph{if} trebuie să exprimăm valoarea semnalului și în cazul în care nu ar fi satisfăcută condiția, altfel se va genera un latch pentru că trebuie memorată valoarea anterioară.
+
+
+\section{XST, Macro-uri}
+XST este programul de sintetizare de la Xilinx. Macro-urile sunt anumite descrieri funcționale recunoscute de XST pentru a genera o circuistică optimă pentru ele. În timpul rulării, XST va încerca să recunoască cât mai multe macro-uri posibile. Macro-urile pot fi: numărătoare, memorii RAM, registre, automate finite, decodificatoare prioritare, etc. \cite{xilinx_xst}\\
+Avem practic un set de reguli care ne spun cum să descriem hardware un bistabil, numărător, FSM pentru a fi recunoscute de programul de sinteză.\\
+De exemplu, pentru a folosi memoria BRAM, în \cite{xilinx_xst} avem niște reguli care vor fi folosite pentru a spune programului de sinteză ce fel de memorie vrem să folosim: citire sincronă/asincronă, dual-port, etc. La rularea lui, XST va încerca să recunoască cât mai multe astfel de descrieri. În cazul în care nu recunoaște, va încerca să contruiască funcțional circuitul.\\
+Pentru automatele finite \cite{xilinx_xst, peter_verilog}, sunt mai multe tipuri de descriere. Cel mai recomandat este de a separa logica secvențială, adică de tranziție a stării la apariția frontului crescător (de exemplu) al semnalului de ceas și logica combinațională de construire a stării viitoare și eventual logica semnalelor de ieșirie în fiecare stare. Sunt mai multe metode de implementare a automatelor, iar programul de sinteză poate fi instruit care mod să folosească. Există moduri optimizate pentru consum minim, resurse minime, viteză maximă, etc.
+
+\chapter{Descrierea proiectării hardware}
+\section{Informații generale despre designul\\ \mbox{hardware}}
+\subsection{Reprezentarea logică a tablei de joc}
+\label{repr_logica}
+Un lucru foarte important în momentul în care se proiectează un procesor pentru un joc, este alegerea reprezentării tablei de joc. Importanța acestui lucru vine din faptul că o stare de joc este elementul de bază în rezolvarea jocului. Algoritmii de rezolvare, vor explora stări de joc. Putem considera această reprezentare ca un atom, iar proiectarea hardware constă într-o \emph{atentă} explorare a acestor atomi.\\
+Din regulile jocului observăm că Reversi se joacă pe o tabla cu dimensiunile 8x8. Știm că există doi jucători, fiecare adăugând pe tabla de joc discuri de culoare albastră respectiv roșie. O analiză mai atentă a acestor reguli, vor conduce la ideea de reprezentare a tablei de joc în procesor. Dimensiunea unei table fiind de 64 de căsuțe, observăm că putem reprezenta această informație pe un memorie de 64 de celule, dacă privim la modul abstract. Fiind într-un sistem digital, aceste căsuțe le constrângem sa aibă doar două valori, 0 sau 1.\footnote{„0” se va înțelege ca și FALS, iar ”1„ ca și ADEVĂRAT.} Nouă ne trebuie 3 valori într-o căsuță, pentru că putem avea discuri albastre, roșii, sau căsuță goală. O soluție elegantă este să folosim 64 de celule pentru fiecare jucător. Vom parăsi denumirea de celule și ne vom referi la un registru pe 64 de biți. Considerăm 2 registre pe 64 de biți ca fiind informația despre configurația tablei de joc, în orice stare din spațiul complet al stărilor s-ar afla jocul. Notăm acele doua registre cu $B$ și $R$.\footnote{Din engleză Blue and Red (Albastru și Roșu).} Fiecare registru va avea un bit de 1 pe poziția unde jucătorul are pus un disc cu culoarea lui. Se observă imediat că este interzis ca registrele să aibă amândouă un bit de 1 pe aceași poziție, pentru că în joc nu se poate ca pe o căsuță să existe două discuri. Nici un disc pe căsuța $i$, va însemna un bit de 0 pe poziția $i$ în ambele registre $R,B$ și avem expresia logică $R_{i} \lor B_{i}  = 0$. Având această reprezentare, putem genera și alte expresii ce ne vor ajuta în proiectare. De exemplu, pentru a avea un registru în care să avem 1 logic pe fiecare poziție liberă din tabla de joc, putem scrie $M = \lnot(R \lor B)$. \label{lOthelloExpr}
+\subsection{Leagea lui Amdahl}\label{amdahl}
+O consecință a legii lui Amdahl presupune favorizarea cazurilor frecvente în detrimentul cazurilor mai puțin frecvente. Voi respecta și în acest proiect această lege, mai ales că avem bine definiți pașii algoritmului, iar unele operații ies clar în evidența ca fiind executate frecvent. \emph{A executa} aici are sensul de a evalua o expresie, sau a aștepta răspunsul de la un modul care în interior face anumite calcule. Algoritmul presupune majoritatea timpului explorări de stări de joc, trecerea dintr-o stare de joc în alta, generarea mutărilor legale pentru un anumit jucător. Fiind luată în considerare complexitatea arborelui de joc și o analiză atentă a jocului, reiese că procesorul va face calcule precum \emph{generează lista de mutări valide}, \emph{fă mutarea $i$ pentru jucătorul $p$}, \emph{generează un scor pentru această stare de joc}, foarte des.\footnote{Pentru o adâncime în arbore de 6 niveluri, se vor explora aproximativ $10^{6}$ stări de joc, nefiind luată în considerare nici o optimizare.} Prin urmare, proiectarea optimă a acestor tipuri de module, va duce la un timp de execuție minim.
+\subsection{Modul de proiectare}
+Procesorul de Reversi este scris modular, în secțiunile următoare voi descrie fiecare modul în parte. Modulul de top le va avea pe toate cele descrise conectate între ele. Un modul are \emph{intrări} și \emph{ieșiri} și funcționalitatea din interior. După această tipologie vor fi descrise în continuare modulele. Ca și intrări comune, vom avea în general semnalul de ceas \emph{clk} și semnaul de resetare \emph{RST}, fiind vorba de obicei de un circuit secvențial.
+\section{Modulul de generare a mutărilor valide}
+\label{modul_moves_map}
+Tranziția de la o stare curentă a jocului la o stare viitoare, este posibilă doar prin existența unei funcții de tranziție între cele două stări pentru jucătorul care e la rând. În orice stare a jocului ne aflăm, pentru a continua jocul, avem nevoie de întreaga mulțime $M = \lbrace m_{1}, m_{2} \ldots m_{n}\rbrace $ unde $m_{i}$ reprezintă perechea $(i,j)$ , o pereche de coordonate în tabla de joc, care reprezintă o mutare validă pentru jucătorul curent. Jucătorul va alege una din aceste mutări posibile, conform strategiei. În momentul în care mulțimea $M = \{\emptyset\}$ pentru ambii jucători, atunci și numai atunci jocul s-a terminat.
+\subsection{Observații}
+Acest modul, cu numele \emph{moves\_map}, face parte din modulele considerate \emph{critice} unde vom urma regulile Amdahl. (\ref{amdahl})\\
+O observație atentă, ne arată că pentru fiecare stare de joc explorată, pentru a explora următoarea stare, trebuie să avem o tranziție din starea $s_{i}$ în starea $s_{i+1}$, conform unei strategii. Cum această operație, de tranziție, va fi executată de procesorul Reversi majoritatea timpului, obiectivul nostru fiind viteza, vrem ca timpul alocat acestei operații să fie minim. Vom descrie ce înseamnă matematic o mutare validă în jocul Reversi, după care voi reveni cu o observație de implementare.
+\subsection{Expresiile logice pentru o mutare validă}
+\label{expr_logice_section}
+Din regulile jocului \ref{reguliOthello}, observăm că jucătorii adaugă discuri, de culoarea corespunzătoare fiecăruia, alternativ. Prima regulă evidentă, este că un disc poate fi poziționat doar pe un loc liber, avem deci expresia $R[i] \lor B[i] =  0$. (\ref{lOthelloExpr})\\
+Existența condiției de \emph{flancare}, înseamnă că un rând de discuri adversare trebuie să se termine cu un disc de-al jucătorului curent. Numărul de discuri capturat trebuie să fie cel putin 1\label{flanc_it}, iar capturarea se face pe toate cele 8 direcții. Asta înseamnă că pentru fiecare poziție din tablă $i$, putem scrie o ecuație logică unde rezultatul va fi \emph{FALS} dacă regulile jocului nu permit ca jucătorul curent să poziționeze un disc pe poziția $i$ făcând o tranziție într-o stare viitoare si \emph{ADEVĂRAT} dacă regulile jocului permit acest lucru. Ecuațiile vor lua în considerare toate posibilitățile ce se pot întâlni pe o anumită direcție, adică, jucătorul poate captura pe direcția $d$ $1, 2 \ldots$ până la maxim 6 discuri ale adversarului. Mutarea fiind validă dacă este permisă capturarea pe cel puțin o direcție din cele opt, putem construi un sistem de expresii logice, iar reuniunea lor va reprezenta rezultatul.\\
+Considerăm în continuare existența unei singure direcții, cea orizontală spre dreapta pentru simplitate. Coordonatele vor fi cuprinse între $0$ și $7$.
+\begin{figure}
+\includegraphics*[scale = 0.5]{single_chain.eps}
+\caption{\small{Pentru exemplificare considerăm o singură direcție, orizontal spre dreapta, discul marcat cu „R” pe poziția 0 înseamnă intenția jucătorului „R” de a muta acolo, căsuța fiind liberă.}}
+\label{fig:fig_move_chain}
+\end{figure}
+De exemplu, pentru colțul stânga-sus, presupunând că jucătorul roșu e la rând, vom avea ecuația:
+\begin{align}
+\label{move_eq}
+M_{0} =& (\lnot R_{0} \land \lnot B_{0}) \land\\
+    &\big((B_{1} \land R_{2}) \lor\\
+    &(B_{1} \land B_{2} \land R_{3}) \lor\\ 
+    &(B_{1} \land B_{2} \land B_{3} \land R_{4}) \lor\\ 
+    &(B_{1} \land B_{2} \land B_{3} \land B_{4} \land R_{5}) \lor\\ 
+    &(B_{1} \land B_{2} \land B_{3} \land B_{4} \land B_{5} \land R_{6}) \lor\\ 
+    &(B_{1} \land B_{2} \land B_{3} \land B_{4} \land B_{5} \land B_{6} \land R_{7})\big).
+\end{align}
+În acest caz avem cele mai multe expresii pentru că pornim de la $M_{0}$. Observăm din figura \ref{fig:fig_move_chain} că pentru $M_{6}$, nu avem expresii pentru această direcție pentru că are ca vecin doar pe $M_{7}$, iar conform (\ref{flanc_it}) trebuie să flancăm cel puțin un disc adversar. Pentru $M_{5}$ avem expresiile:
+\begin{align}
+M_{5} =& (\lnot R_{5} \land \lnot B_{5}) \land \tag{condiția ca poziția 5 să fie liberă} \\
+    &(B_{6} \land R_{7}). \tag{condiția să flancăm poziția 6}
+\end{align}
+
+
+\begin{figure}[h]
+%bb = 0 0 355 350, 
+\includegraphics*[scale = 0.4]{reversi_board.eps}
+\caption{\small{Starea inițială a jocului. $M_{[i][j]}$ înscrise pe grafic, reprezintă mutările legale ale jucătorului \emph{negru}.}}
+\label{fig:fig_rboard}
+\end{figure}
+
+Din figura \ref{fig:fig_rboard}, observăm că pentru pozițiile $(3,3), (3,4), (4,3), (4,4)$ nu avem ecuații pentru că acestea nu vor fi niciodată libere, conform regulilor jocului. Rămân deci $60$ de expresii logice, pentru fiecare poziție de pe tablă. Fiecare poziție având cel mult $8$ expresii precum în \eqref{move_eq} și cel puțin $3$ dacă observăm colțurile, unde avem doar $3$ direcții. Se observă diferite simetrii în tabla de joc, de exemplu $M_{[4][5]}$ cu $M_{[3][2]}$ sau colțurile opuse fiind simetrice din punct de vedere a expresiilor.
+\subsection{Descrierea modulului}
+\subsubsection{Denumire}
+\emph{moves\_map}
+\subsubsection{Dependințe}
+\emph{N/A}
+\subsubsection{Intrări}
+Modulul primește la intrare semnalele:
+\begin{itemize}
+\item Semnalul \emph{clk} este tactul la care va funcționa acest modul și va fi legat la tactul global în acest proiect.
+\item Semnalul \emph{RST}, semnal de resetare legat la resetul global.
+\item \emph{B\_, R\_} în total $2 \cdot 64$ biți de date, reprezentând o stare a jocului. (\ref{repr_logica})
+\item \emph{player} intrare $1$ bit care reprezintă jucătorul pentru care trebuie construită harta mutărilor valide.
+\end{itemize}
+
+\subsubsection{Ieșiri}
+\begin{itemize}
+\item \emph{M\_}, ieșire pe 64 biți, ce reprezintă harta mutărilor valide, scopul acestui modul.
+\end{itemize}
+
+\begin{figure}[h]
+\includegraphics*[bb = 0 100mm 180mm 270mm, scale = 0.3]{moves_map.eps}
+\caption{\small{Modulul \emph{moves\_map}, schemă black-box generată de programul Xilinx ISE.}}\footnote{R\_ , B\_ trebuie interpretate ca și R și B}
+\label{fig:fig_movesmap}
+\end{figure}
+
+\subsection{Detalii de implementare}
+Pentru a avea o proiectare bună a modulului, s-a luat în considerare principiul de a avea un registru la ieșirea modulului pentru a păstra ieșirile până la următorul \emph{clock cycle}\footnote{Ciclu de ceas.} (\ref{hardware_gooddesign}). Prin urmare, modulul este împarțit într-o parte combinațională și o parte secvențială care va memora ieșirile. Ieșirea se schimbă pe frontul crescător al semnalului \emph{clk}.\\
+Vom declara registrul:
+\begin{verbatim}
+reg [63:0] RES_Q;
+reg [63:0] RES_D;
+\end{verbatim}
+Ieșirea M este de tipul \emph{wire}, este conectată direct la \emph{RES\_Q}, ieșirea registrului \emph{RES} implementat cu bistabile de tipul \emph{D}.\\
+
+\subsubsection{Partea secvențială a modulului:}
+În \emph{VERILOG} avem următoarea descriere:
+\begin{fragmentsursa}
+\begin{verbatim}
+always @(posedge clk) begin
+    if ( RST ) begin
+        RES_Q <= 64'b0;
+    end
+    else begin
+        RES_Q <= RES_D;
+    end
+end
+\end{verbatim}
+\caption{Procesul sincron}
+\end{fragmentsursa}
+
+Operația îndeplinită este de a bascula la ieșirea \emph{Q}, intrarea \emph{D} a bistabilelor ce formează registrul \emph{RES}, pe frontul crescător al semnalului de sincronizare. Resetul acestui modul este sincron cu semnalul \emph{clk}, un principiu bun de proiectare hardware în FPGA (\ref{hardware_gooddesign}). Ieșirea \emph{Q} va avea toți biții \emph{0} în cazul în care linia \emph{RST} este activată.
+\subsubsection{Partea combinațională a modulului}
+Am descris în (\ref{expr_logice_section}) că fiecare poziție de pe tabla de joc va fi o mutare validă dacă o serie de propoziții logice vor returna \emph{adevărat}. Tot în (\ref{expr_logice_section}) am văzut că o poziție poate să aibă maxim $8$ expresii logice și minim $3$. Ca și structură, am definit în modulul \emph{moves\_map} un registru pe $8$ biti pentru fiecare poziție din tabla de joc și $64$ astfel de registre. În total $64 \cdot 8$ bistabile. Cei $8$ biți ai unui registru, corespund celor 8 direcții în care un disc poate captura discuri adversare:
+\begin{verbatim}
+parameter ZEROP   = 3'd0;
+parameter DOWN45P = 3'd1;
+parameter DOWN    = 3'd2;
+parameter DOWN45M = 3'd3;
+parameter ZEROM   = 3'd4;
+parameter UP45M   = 3'd5;
+parameter UP      = 3'd6;
+parameter UP45P   = 3'd7;
+\end{verbatim}
+În acești parametrii, care sunt un alias pentru valorile numerice care înseamnă direcția, „45” se referă la direcțiile oblice, „UP” la direcțiile pozitive, dacă considerăm un sistem de axe în poziția de pe tablă unde dorim să punem discul, „ZERO” înseamnă orizontal, adică coordonata $y=0$, iar „M” și „P” vine de la stânga/dreapta\footnote{De fapt vine de la Minus/Plus.} pe tabla de joc.\\
+Un alt lucru ce am să-l menționez aici, este vorba de intrarea \emph{player}\footnote{Jucător.} a modulului. Singura diferență între expresiile \eqref{move_eq} luând în considerare jucătorul, este că se va interschimba „B” cu „R”. Jucătorii având aceleași reguli, contează doar culoarea lor. Această observație este foarte importantă pentru că nu vom generea o circuistică în plus pentru al doilea jucător. Determinarea mutărilor pentru orice jucător vor folosi aceleași expresii, singura diferență este că se va inversa „B” cu „R” pentru adversar. Mă refer relativ la adversar, adică consider jucătorii de genul $p$ și $\lnot p$, pentru că nu contează aici cine e \emph{roșu} și cine e \emph{albastru}, singurul lucru important este această observație de care am vorbit și expresiile \eqref{move_eq}.\\
+În descrierea hardware, multiplexăm intrările „R” și „B”, intrarea \emph{player} fiind intrarea de selecție.
+În \emph{VERILOG} vom avea următorul cod:
+\begin{verbatim}
+assign R = (player) ? B_ : R_;
+assign B = (player) ? R_ : B_;
+\end{verbatim}
+În continuare se va lucra cu „R” și „B” care reprezintă intrările „R\_” și „B\_” în această formă, sau inversate.\\
+Expresiile logice vor fi evaluate continuu, la fiecare modificare a lui „R” și „B” și în paralel pentru fiecare direcție și pentru fiecare poziție de pe tablă. În acest mod, întarzierea maximă va fi dată de etajele logice din cea mai complicată expresie.
+Exemplificăm printr-o expresie din cod:
+
+
+\begin{fragmentsursa}
+\begin{scriptsize}
+  \begin{verbatim}
+M[0][0][UP45M] = (!R[0*8 + 0] && !B[0*8 + 0]) && 
+ (
+  (R[1*8 + 0] && B[2*8 + 0]) ||
+  (R[1*8 + 0] && R[2*8 + 0] && B[3*8 + 0]) ||
+  (R[1*8 + 0] && R[2*8 + 0] && R[3*8 + 0] && B[4*8 + 0]) ||
+  (R[1*8 + 0] && R[2*8 + 0] && R[3*8 + 0] && R[4*8 + 0] && B[5*8 + 0]) ||
+  (R[1*8 + 0] && R[2*8 + 0] && R[3*8 + 0] && R[4*8 + 0] && R[5*8 + 0] && B[6*8 + 0]) ||
+  (R[1*8 + 0] && R[2*8 + 0] && R[3*8 + 0] && R[4*8 + 0] && R[5*8 + 0] && R[6*8 + 0] && B[7*8 + 0]) 
+ );
+  \end{verbatim}
+\end{scriptsize}  
+\caption{Expresia logică pentru $M_{[0][0][UP45M]}$}
+\label{M_0_0}
+\end{fragmentsursa}
+
+
+Expresia din fragmentul de sursă (\ref{M_0_0}) aparține poziției $M_{[0][0]}$, vezi figura \ref{fig:fig_rboard} pentru a vizualiza pe tablă această poziție, pe direcția diagonală sus-stânga. Este un exemplu de cea mai lungă expresie, pentru că pot fi capturate până la $6$ discuri, ce reprezintă numărul maxim pe o tablă $8*8$.\\
+La fiecare intrare $D_{i}$ din registrul pe $64$ biți \emph{RES}, va fi o expresie ce va face operația „SAU” între valorile expresiilor determinate pentru fiecare direcție din cele $8$. În final, ca și asignare continuă vom avea $M$ legat de ieșirea $Q$ a registrelor.
+
+\subsubsection{Schema internă}
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics*[bb = 0 0mm 165mm 300mm, scale = 0.4, angle = 270]{schema_interna_movesmap.eps}
+\caption{\small{Această schemă reprezintă intrarea $D_{0}$ a registrului \emph{RES}.}}
+\label{fig:fig_moves_map_schema}
+\end{center}
+\end{figure}
+
+În \ref{fig:fig_moves_map_schema} este expresia completă pentru intrarea $D_{0}$ a registrului de ieșire. Programul de sinteză minimizează dacă este cazul orice expresie legică. De exemplu, pentru pozițiile unde o anumită direcție nu există, pozițiile de margine sau colțurile, valoarea expresiei este cunoscută de la început ca fiind valoarea $0$ pentru direcția inexistentă. Programul de sintetizare va folosi acest lucru pentru generarea unui număr minim de porți logice. Se observă în figură, poarta \emph{SAU} cu $3$ intrări, fiind cele $3$ direcții.\\
+\subsection{Observații}
+Numărul de expresii fiind foarte mare, mai exact $60 \cdot 8$, scrierea manuală ar fi fost extrem de complicată și foarte posibil ar fi apărut multe greșeli. Dar, toate aceste expresii pot fi foarte ușor descrise algoritmic. Am dezvoltat și eu un script \emph{Python} pentru a descrie pentru fiecare poziție expresiile logice, iar ieșirea acestui script reprezintă codul sursă \emph{Verilog}. Ce se vede de exemplu în fragmentul de sursă \ref{M_0_0}, este cod sursă generat de acest script  (\emph{map.py}). Descrierea algoritmică a expresiilor a necesitat $77$ linii de cod, sursa generată fiind de $2392$ linii de cod.
+\subsection{Concluzii}
+După sintetizare, conform raportului generat de către \emph{xst}\footnote{Programul de sintetizare de la Xilinx.}, modulul \emph{moves\_map} ocupă $7\%$ din resursele (\emph{slice-uri}) FPGA-ului. Acest număr poate varia în momentul în care acest modul va fi integrat cu alte module, datorită resintetizării de către program, împreună cu alte module. Numărul de \emph{LUT-uri} (vezi \ref{hard_LUT}) ocupate este de $594$, aproximativ $6\%$ din resurse.\\
+Observăm că s-a consumat o parte semnificativă din resurse cu acest modul, acesta fiind compromisul acceptat dorind ca la ieșirile modulului să avem noi date pe fiecare front crescător al impulsului de sincronizare. Modulul curent se încadrează constrângerii globale de $50MHz$ atribuită semnalului \emph{clk}. Dacă dorim să creștem frecvența, probabil va trebui să facem o serie de modificări în design datorită întârzierilor pentru fiecare nivel de porți logice.
+
+\section{Modulul de tranziționare între stări}
+În primul modul prezentat, dând la intrare o stare de joc reprezentată prin „R” și „B” și prin „player”, semnal pe 1 bit însemnând jucătorul pentru care se calculează ieșirile, obținem o hartă de biți unde prin biții de „1” avem reprezentate mutările valide. Fiind determinată această hartă, avem oarecum în acel modul exprimate o parte din regulile jocului. Ele sunt exprimate în acele expresii logice de care am vorbit, dar lipsește a doua parte a regulilor, adică. „Cum trecem la o stare viitoare?”.\\
+Modulul prezentat în această secțiune, complementează modulul anterior implementând restul de reguli ale jocului. Reglulile neimplementate până acum sunt acelea referitoare la starea viitoare a jocului, adică răspunsul la întrebarea „Ce se întâmplă când am pus discul de culoarea mea pe această poziție?”.
+Matematic putem exprima:
+% 
+%
+
+
+
+\begin{align}
+\label{game_formal}
+&M=\lbrace m_{1}, m_{2}, \ldots , m_{k} \rbrace\\
+&H=\lbrace h_{1}, h_{2}, \ldots , h_{q} \rbrace\\
+&S=\lbrace s_{1}, s_{2}, \ldots , s_{n} \rbrace\\
+&H\subset S\\
+&\delta(s_{0}) : S\backslash H \rightarrow S\backslash \{H, s_{0}\}\\
+&H = H \cup \lbrace s_{0} \rbrace
+\end{align}
+
+
+%
+%
+
+$H$ reprezintă stările care au fost jucate, în Reversi nu este posibil ca o stare a jocului din trecut să se repete, pentru că jocul se termină maxim în $60$ de mutări.\\
+În acest modul ne interesează funcția $\delta$, unde ca rezultat vom avea o nouă stare a jocului. Având în vedere algoritmul de explorare a spațiului stărilor, vom comanda foarte des acest modul, pentru fiecare tranziție din starea $s_{i}$ în $s_{i+1}$. Este evident că timpul total de explorare, timpul de „gândire” a procesorului este direct proporțional cu timpul de răspuns al acestui modul. Din nou, ca și o consecință a legilor lui Amdahl (\ref{amdahl}), va trebui să proiectăm acest modul făcând alte compromisuri în favoarea timpului mic de răspuns.\\
+Algoritmic, ce trebuie să facă acest modul, este de a captura piesele adversarului. Se presupune că la intrare primește o coordonată de pe tabla de joc, validă, adică unde jucătorul care e la rând are voie să pună disc, iar rezultatul constă într-o tablă de joc modificată, cu discurile adversarului transformate în culoarea jucătorului curent.
+\subsection{Metoda greșită}
+Dacă ar fi să exprimăm printr-un pseudocod acest algoritm, considerând un procesor obișnuit, secvențial, cel mai probabil vom exprima tabela de joc ca o matrice $8*8$ și pentru fiecare direcție din cele $8$, vom face un cilcu \emph{while} unde vom schimba culoarea disculurilor adversare în culoarea noastră. Vom merge în acel ciclu până când am ajuns la un disc de culoarea noastră, marginea tablei de joc, sau o casuță liberă. Dacă nu am întâlnit un disc de culoarea noastră (adică a jucătorului ce e la rând), atunci nu se face nici o modificare.\\
+La început, s-a încercat și această soluție în hardware. Ciclul a fost înlocuit cu un automat cu stări finite.\\
+Această soluție presupunea un automat finit pentru fiecare direcție, astfel inspectându-se în paralel fiecare direcție pentru a întoarce discurile adversarului. Problema mare aici ar fi fost memoria de lucru. Ar fi fost prea complicat ca aceste automate să opereze toate pe aceași matrice de bistabile, care sunt reprezentarea tablei de joc. Era pus în dificultăți și programul de sinteză, care nu a găsit altă soluție decât conectarea ieșirilor mai multor porți la intrarea unui bistabil, total greșit.\\
+Dacă aș fi folosit câte o matrice de bistabile pentru fiecare direcție din cele $8$, s-ar fi consumat mult prea multe resurse, necâștigându-se nimic în loc. Mai mult, circuistica pentru a compune rezultatul celor $8$ direcții, adică de a face operația \emph{SAU} între ele, ar fi fost iar complicată. Un alt lucru esențial, ar fi fost sincronizarea între procesele care inspectează paralel toate cele $8$ direcții în care se pot captura discuri în Reversi. Pentru o anumită poziție, câteva dintre direcții se vor termina mai repede de inspectat, fiind mai puține discuri de capturat, iar altele mai târziu, fiind mai multe discuri. Această așteptare după toate cele $8$ direcții, ar fi necesitat o circuistică suplimentară.\\
+Având în vedere că automatele finite folosite vor face o tranziție la fiecare impuls de sincronizare, fiind vorba de aproximativ $10$ stări, nu are sens să fie prezentate, timpul de răspuns al modulului în acest caz ar fi fost foarte mare comparativ cu soluția prezentată în secțiunea următoare. 
+
+\subsection{Implementarea corectă}
+După multe încercări de proiectare si de debarasare de o gândire secvențială și de tipologii de programare \emph{software} limitate de capacitățile unui procesor secvențial, implementarea a părut evidentă. Inspirat din ideea de sumator cu transport propagat\footnote{În engl. ripple carry adder.}, putem considera tabla de joc ca un întreg circuit, unde toate pozițiile tablei sunt legate între ele, fiecare cu toți cei $8$ vecini. Avem ca rezultat o rețea puternic interconectată formată din bistabile, $8$ pentru fiecare poziție. Pentru a captura discurile pe o direcție, programatic am căuta discul de culoarea noastră iar dacă e găsit, toate discurile adversare până la discul nostru, adică cele flancate, se vor întoarce.\footnote{Asta înseamnă că vor deveni de culoarea jucătorului curent.} Putem considera un val care se propagă de-a lungul direcției, iar în momentul în care s-a lovit de un disc de culoarea jucătorului curent, valul este \emph{reflectat}. Poziția de unde s-a pornit și toate pozițile de pe direcție prin care a trecut, vor sesiza această reflexie și își vor \emph{complementa} culoarea. Acest lucru se va întâmpla în paralel pe toate direcțiile. În final se va compune la ieșirea modulului tabla de joc ce reprezintă o stare viitoare a jocului, adică rezultatul funcției $\delta(s_{0})$, $s_{0}$ fiind starea de la intrarea modulului.
+
+
+\subsection{Descrierea modulului}
+\subsubsection{Denumire}
+\emph{b\_move}
+\subsubsection{Dependințe}
+\emph{move\_cell}
+\subsubsection{Intrări}
+Modulul primește la intrare semnalele:
+\begin{itemize}
+\item \emph{clk}, semnalul de tact la care va funcționa acest modul.
+\item \emph{RST}, semnalul de reset al modulului, conectat la resetul global.
+\item \emph{player}, intrare $1$ bit care reprezintă jucătorul pentru care se va face mutarea.
+\item \emph{X}, intrare $3$ biți care reprezintă coordonata x pe tabla de joc, adică coloana. (vezi \ref{fig:fig_rboard})
+\item \emph{Y}, intrare $3$ biți care reprezintă coordonata y pe tabla de joc, adică linia. (vezi \ref{fig:fig_rboard})
+\item \emph{B\_, R\_} în total $2 \cdot 64$ biți de date, reprezentând o stare a jocului. (\ref{repr_logica})
+\end{itemize}
+
+\subsubsection{Ieșiri}
+\begin{itemize}
+\item \emph{R\_OUT} ieșire $64$ biți reprezentând matricea \emph{R} pentru starea viitoare. (vezi \ref{repr_logica})
+\item \emph{B\_OUT} ieșire $64$ biți reprezentând matricea \emph{B} pentru starea viitoare. (vezi \ref{repr_logica})
+\end{itemize}
+
+\subsection{Detalii de implementare}
+Am vorbit mai înainte despre faptul că ne vom închipui tabla de joc formată dintr-o rețea puternic conectată, adică fiecare căsuță conectată cu toți cei $8$ vecini, unde e cazul. Mă voi referi în continuare la termenul de \emph{celulă}, având $64$ de celule pentru o astfel de reprezentare. Fiind prea complicat circuistic să construim o celulă care să poată fi conectată cu $8$ astfel de celule, ne vom închipui că există $8$ straturi. în fiecare strat valul se propagă într-o singură direcție și se reflectă dacă e cazul, asta însemnând că o celulă va fi conectată cu maxim $2$ celule vecine. Fiind o singură direcție de propagre pe strat, celulele de pe două linii diferite nu vor fi legate între ele, dacă considerăm cele două direcții orizontale. La fel și pentru verticală, coloanele nu vor fi legate între ele. Pentru cele $4$ diagonale la fel, vor fi despărțite.\\
+Figura \ref{fig:fig_ripple} prezintă un astfel de lanț de propagare. Este irelevantă direcția pe care se exemplifică. Toate lanțurile de propagare, în total $8 \cdot 8 \cdot 8$ sunt la fel, contează doar legăturile între ele, adică liniile \emph{fw} și \emph{bw}.\footnote{În engl. forward și backward. În rom. înainte și înapoi.}
+\begin{figure}[h]
+\includegraphics*[scale = 0.3]{ripple.eps}
+\caption{\small{Considerăm propagarea valului în acest exemplu, de la stânga spre dreapta, până la penultima celulă unde se află un disc de culoarea considerată curentă, negru. \emph{fw} marchează direcția de propagare, iar \emph{bw} semnalul ce se întoarce în cazul în care a fost găsit un disc de culoare neagră.}}
+\label{fig:fig_ripple}
+\end{figure}
+\subsubsection{Definiția unei celule. (modulul \emph{move\_cell})}
+Fiind un număr mare de astfel de celule, $8 \cdot 8 \cdot 8$ trebuie să avem mare grijă la proiectare încât circuitul gândit să ocupe minim de resurse.\footnote{8 celule pentru fiecare lanț, 8 lanțuri per strat, 8 straturi.}  Orice circuistică în plus, va fi multiplicată cu numărul total de celule. Trebuie avut grijă pentru a nu avea secvențe \emph{if} prea multe, pentru că se vor traduce în multiplexoare care sunt destul de costisitoare. O celulă este un modul pur combinațional.
+\subsubsection{Intrări}
+\begin{itemize}
+\item \emph{r} semnal $1$ bit ce reprezintă existența unui disc roșu pe poziția atribuită celulei.
+\item \emph{b} semnal $1$ bit ce reprezintă existența unui disc albastru pe poziția atribuită celulei.
+\item \emph{pulse} semnal $1$ bit reprezintă sursa propagării semnalului $fw$.
+\item \emph{fw\_in} semnale $1$ bit ce reprezintă semnalul de propagare primit de la vecinul anterior.
+\item \emph{bw\_in} semnale $1$ bit ce reprezintă semnalul de întoarcere primit de la vecinul următor.
+\end{itemize}
+
+\subsubsection{Ieșiri}
+\begin{itemize}
+\item \emph{fw\_out} semnal $1$ bit ce reprezintă semnalul de propagare trimis la vecinul următor.
+\item \emph{bw\_out} semnal $1$ bit ce reprezintă semnalul de întoarcere trimis la vecinul anterior.
+\item \emph{r\_out, b\_out} semnale $1$ bit ce reprezintă noile valori pentru \emph{r, b}. 
+\end{itemize}
+
+\subsubsection{Schema bloc}
+\begin{figure}[h]
+\includegraphics*[bb = 0 100mm 180mm 270mm, scale = 0.3]{xilinx_move_cell.eps}
+\caption{\small{Schema bloc a modulului \emph{move\_cell}.}}
+\label{fig:fig_move_cell}
+\end{figure}
+
+În figura \ref{fig:fig_ripple} am considerat discul inițial fix la început dar nu trebuie neaparat să fie așa. În tot lanțul de celule trebuie să spunem unde inițiem propagarea. Pentru acest lucru este semnalul \emph{pulse}. O singură celulă din lanț va avea semnalul \emph{pulse} pus pe $1$ logic, pentru că un singur disc se poate pune pe tablă la o mutare. \emph{Pulse} este inițiatorul „valului” și va fi pe poziția pe care jucătorul va pune un disc.
+\begin{fragmentsursa}
+\begin{verbatim}
+always @( * ) begin
+   /* if backward signal and forward signal, flip the discs. 
+      Otherwise, r,b bits remain the same	*/
+    if ( bw_in && fw_in ) begin
+        b_out_reg = 1;
+        r_out_reg = 0;
+    end
+    else begin
+        b_out_reg = b;
+        r_out_reg = r;
+    end
+end
+\end{verbatim}
+\caption{Procesul combinațional pentru \emph{move\_cell}}
+\end{fragmentsursa}
+
+Logica unei celule este foarte simplă, lucru absolut necesar. Se vor considera \emph{b\_out\_reg} și \emph{r\_out\_reg} ca fiind \emph{r\_out} și \emph{b\_out}, numele inițial având sens doar în descrierea comportamentală în \emph{VERILOG}.\\
+Pentru interpretare, celula consideră jucătorul albastru ca fiind la rând. Un lucru important tot pentru a simplifica circuistica, vom vedea ulterior cum se calculează pentru jucătorul roșu.\\
+În descrierea comportamentală, avem: dacă semnalul \emph{bw\_in} și \emph{fw\_in} au valoarea $1$ logic, atunci înseamnă ca a fost primit semnalul de întoarcere și cel de propagare, ceea ce înseamnă că s-a întălnit un disc de culoarea jucătorului, albastru în acest caz. Rezultatul, va fi setarea componentei \emph{b} a celului pe $1$ și a componentei \emph{r} pe $0$. S-a întors practic discul.\\
+În cazul în care rezultatul porții \emph{ȘI} dintre cele două semnale de propagare nu este $1$, componentele \emph{r} și \emph{b} rămân egale cu cele inițiale, adică discul nu trebuie întors.
+
+\begin{fragmentsursa}
+\begin{verbatim}
+assign 	fw_out = pulse || (r && fw_in);
+
+/* backward signal is 1 if we received 
+   backward signal from neighbour cell, 
+   or if we flanc the disc (b bit is 1)
+   and we propagate the bw signal */
+   
+assign	bw_out = bw_in || (b && fw_in);
+\end{verbatim}
+\caption{Expresiile logice a semnalelor de propagare}
+\end{fragmentsursa}
+
+Semnalul de întoarcere \emph{bw\_out} se va propaga în cazul în care avem la intrarea modulului semnalul \emph{bw\_in} activ, asta înseamnă ca discul albastru căutat pentru a flanca, a fost găsit, iar valul este reflectat, sau, celula reprezintă un disc albastru și am primit semnalul de propagare \emph{fw\_in} care înseamnă ca tocmai această celulă e cea căutată.
+Semnalul \emph{fw\_out} va fi $1$ logic, dacă a fost primit deja un „val” pe intrarea \emph{fw\_in}, iar celula reprezintă un disc roșu, sau, avem semnalul \emph{pulse} activ care înseamnă că tocmai s-a inițiat o propagare, adică se dorește o mutare pe acea poziție. Din aceste două semnale trebuie observat ca \emph{r} și \emph{b} se consideră că nu vor fi simultan $1$, pentru că nu pot fi două discuri pe aceași căsuța de pe tablă.
+\subsubsection{Modulul \emph{b\_move}}
+Respectând una din paradigmele proiectării hardware corecte, adică "întotdeauna reține ieșirile”\footnote{„Always register your outputs.”\cite{xilinx_coding_practices}}, modulul are și o parte secvențială, care acest lucru va face. La fiecare impuls de ceas, va bascula la ieșirea \emph{Q} a registrelor, intrarea \emph{D}. Registrele sunt puse pe fiecare ieșire, adică pe \emph{R\_OUT} și \emph{B\_OUT}. În total $2 \cdot 64$ bistabile. Dacă linia de reset, \emph{RST}, este activată, atunci registrele vor avea la ieșire intrările nemodificate:
+\begin{fragmentsursa}
+\begin{verbatim}
+always  @(posedge clk) begin
+    if (RST) begin
+        /* prepare outputs */
+        R_OUT_Q <= R_;
+        B_OUT_Q <= B_;
+    end 
+    else begin
+		/* output logic, registered, depends of player */
+        R_OUT_Q <= R_OUT_D;
+        B_OUT_Q <= B_OUT_D;
+    end
+end
+\end{verbatim}
+\caption{Procesul sincron pentru \emph{b\_move}}
+\end{fragmentsursa}
+Toată logica compusă de către celulele \emph{move\_cell} vor fi legate la intrarea \emph{D} a registrului \emph{R\_OUT} și \emph{B\_OUT}. Este vorba de ieșirile \emph{r} și \emph{b} a fiecărei celule. Timpul total al propagărilor prin celule trebuie să fie mai mic decât perioada impulsului de ceas, pentru că la fiecare front crescător, se vor citi intrările registrului, moment în care rezultatul de la celule trebuie să fie stabil. Se poate determina astfel frecvența maximă la care poate funcționa acest modul.\\
+\subsubsection{Definirea celulelor}
+Având structura unei celule, descrisă anterior, va trebui acum să le definim, adică să le legăm între ele. Vor fi în total $8 \cdot 8 \cdot 8$ celule. Avem definite în sursă, o matrice de \emph{fire} pentru fiecare strat cu care vom lega intrările și ieșirile celulelor, semnalele de tip \emph{fw} și \emph{bw}. Pentru celulele de pe linii și de pe coloane, ambele sensuri (stânga, dreapta) pot fi depinite mai ușor, utilizând definiția \emph{for} a limbajului \emph{VERILOG.} For-ul va primi o variabilă de tip \emph{genvar}, care este un iterator, iar în interior vom descrie celulele pentru un lanț, iar în for se va multiplica acel lanț de $8$ ori, fiind schimbate indicii din matricea de fire pentru semnalele \emph{fw} și \emph{bw}. Pentru diagonale, e puțin mai complicat, fiind necesare tratarea câtorva cazuri speciale.
+\begin{fragmentsursa}
+\begin{scriptsize}
+\begin{verbatim}
+move_cell m0(.r(R[0 + i1*8]), .b(B[0 + i1*8]), 
+             .fw_in(wfw_out0[1 + i1*8]), .bw_in(1'b0), 
+             .bw_out(wbw_out0[0 + i1*8]), .fw_out(wfw_out0[0 + i1*8]), 
+             .pulse((X == 0) && (Y == i1)), 
+             .r_out(R_OUT_D0[0 + i1*8]), .b_out(B_OUT_D0[0 + i1*8]) );
+\end{verbatim}
+\end{scriptsize}
+\caption{Definirea unei celule în cod}
+\label{m0}
+\end{fragmentsursa}
+În (\ref{m0}) \emph{i1} este variabila din ciclul \emph{for}. Se vede deci din parametrii \emph{r} și \emph{b}, că se definește celula $0$, pentru fiecare linie.\footnote{0 reprezintă coordonata \emph{y}, iar \emph{i1*8} reprezintă coordonata \emph{x}.} La intrările și ieșirile de tipul \emph{fw} și \emph{bw}, sunt matricile care sunt definite ca fire.\footnote{În \emph{VERILOG} sunt \emph{wires}.} Intrarea pentru \emph{bw\_in} adică semnalul de întoarcere, este legat la $0$ logic, pentru că în acest exemplu este definită celula $0$, corespunzătoare poziției $M_{[0][0]}$ (vezi \ref{fig:fig_rboard}), care nu are de la cine să primească semnal de întoarcere, pentru că este în marginea tablei de joc.\footnote{Este considerată direcția de propagare dreapta-stânga.} La fel și semnalul \emph{bw\_out} este redundant definit aici, va fi practic un fir care nu va fi legat niciunde, pentru ca nu are unde să se propage semnalul în dreapta, dar a fost definit pentru simetrie. Programul de sinteză va ignora acest lucru. Semnalul \emph{pulse} va avea valoarea $1$ dacă și numai dacă coordonata \emph{X} și coordonata \emph{Y}, intrări ale modulului, sunt egale cu coordonatele celulei. În acest caz, fiind definită celula $0$, pentru fiecare coloană a tablei, \emph{X} trebuie să fie $0$, iar \emph{Y} trebuie să fie egal cu coloana. Ieșirile \emph{r\_out} și \emph{b\_out} vor fi legate la intrarea unor bistabile \emph{D}. Va fi definită o matrice de bistabile pentru fiecare strat. Ciclul \emph{for} în \emph{VERILOG} nu face altceva decât să repete o declarație în funcție de un parametru, în acest caz \emph{i1}, altfel ar fi fost necesară scrierea de mână a tuturor celor $8 \cdot 8 \cdot 8$ celule.
+\subsubsection{Procesul combinațional}
+La fiecare impuls de ceas, rezultatul celulelor vor fi încărcate în registru. Având $8$ straturi, va trebui să compunem rezultatul de la fiecare strat de celule. Intrarea \emph{D} a registrelor de ieșire va fi o funcție \emph{SAU} între toate cele $8$ straturi pentru culoarea albastră și funcția \emph{ȘI} pentru roșu.
+
+\begin{fragmentsursa}
+\begin{scriptsize}
+\begin{verbatim}
+always @( * ) begin
+    if ( player ) begin
+        R_OUT_D = B_OUT_D0 | B_OUT_D1 | B_OUT_D2 | B_OUT_D3 | B_OUT_D4 | B_OUT_D5 | B_OUT_D6 | B_OUT_D7;
+        B_OUT_D = R_OUT_D0 & R_OUT_D1 & R_OUT_D2 & R_OUT_D3 & R_OUT_D4 & R_OUT_D5 & R_OUT_D6 & R_OUT_D7;
+        R_OUT_D[Y*8 + X] = 1;
+        B_OUT_D[Y*8 + X] = 0;
+    end
+    else begin
+        R_OUT_D = R_OUT_D0 & R_OUT_D1 & R_OUT_D2 & R_OUT_D3 & R_OUT_D4 & R_OUT_D5 & R_OUT_D6 & R_OUT_D7;
+        B_OUT_D = B_OUT_D0 | B_OUT_D1 | B_OUT_D2 | B_OUT_D3 | B_OUT_D4 | B_OUT_D5 | B_OUT_D6 | B_OUT_D7;
+        R_OUT_D[Y*8 + X] = 0;
+        B_OUT_D[Y*8 + X] = 1;
+    end
+end
+\end{verbatim}
+\end{scriptsize}
+\caption{Definirea intrărilor \emph{D} pentru \emph{R\_OUT}, \emph{B\_OUT}}
+\label{bmove_combinational}
+\end{fragmentsursa}
+În sursă, \ref{bmove_combinational}, albastru este considerat ca fiind jucătorul pentru care $player = 0$. La intrarea registrului \emph{B\_OUT} se va face funcția \emph{SAU}, pentru că ne interesează rezultatul fiecărui strat. Dacă de exemplu un strat nu a schimbat nimic în tabla de joc, adică în acea direcție nu se puteau captura piese, atunci valorile celulelor vor fi tot $0$ pentru matricea \emph{B}. Noi dorim să luăm în considerare fiecare strat, discurile întoarse de pe fiecare strat, ne trebuie practic reuniunea lor $S_{0} \cup S_{1} \cup S_{2} \cup S_{3} \cup S_{4} \cup S_{5} \cup S_{6} \cup S_{7}$. Pentru matricea \emph{R}, avem nevoie exact invers, de a fi luat în considerare orice disc capturat, de pe orice strat. Un disc capturat va fi reprezentat prin $0$ pentru ieșirea \emph{r\_out} din celulă. Avem nevoie practic de $S_{0} \cap S_{1} \cap S_{2} \cap S_{3} \cap S_{4} \cap S_{5} \cap S_{6} \cap S_{7}$. Dacă roșu este jucătorul care a mutat, atunci rolulile \emph{R} și \emph{B} se schimbă, atâta tot. Este observația valabilă și la modulul \emph{moves\_map} (vezi \ref{move_eq}). Pe poziția pe care s-a aplicat semnalul \emph{pulse}, nu se pune nici un disc. Motivul este că s-ar fi inferat mult mai multe porți în total pentru toate celulele. Pentru a pune totuși discul pe tablă, se pune direct intrarea \emph{D} corespunzătoare poziții pe $1$, iar pentru culoarea adversarului, pe $0$. Și acest lucru va genera o circuistică destul de mare, pentru că programul de sinteză va aplica un multiplexor pe fiecare poziție din cele $64$. Se observă că discul se adaugă necondiționat, înseamnă că acest modul nu face nici un test dacă intrările \emph{X} și \emph{Y} sunt valide. Este și normal, cu validarea mutărilor se ocupă modulul anterior, cel de față presupune că intrările primite sunt valide.
+
+\subsection{Concluzii}
+Timpii de propagare prin toate nivelurile de porți logice este mai mic decât perioada tactului, funcționarea la $50MHz$ este asigurată. Dacă dorim să creștem frecvența, vor apărea noi probleme de proiectare care presupun un studiu destul de aprofundat. Resursele ocupate de acest modul, sunt semnificativ mai mari decât la modulul anterior, dar este un compromis bun, având în vedere că o tranziție de la o stare la alta se va executa într-un ciclu de tact. 
+După sinteză, raportul arată că modulul ocupă $1515$ de LUT-uri, ce înseamnă $16\%$ din resursele totale, la care se adugă încă câteva blocuri logice. Numărul de linii de cod este de $378$.
+\\Cu \emph{moves\_map} și \emph{b\_move} pot să spun că există „armata” necesară pentru a „lupta” într-un joc precum Reversi, fiind luată în considerare complexitatea lui.
+
+\section{Controlerul VGA}
+\label{vga_ctrl}
+Ca și metodă de comunicare cu un utilizator, am ales varianta afișării tablei de joc pe un monitor. De obicei, un controler VGA, va dispune de o memorie video unde se află informațiile de culoare pentru fiecare pixel. În cazul nostru, nu este nevoie de așa ceva, pentru că tabla de joc se poate descrie algoritmic, nu este nevoie să memorăm o hartă de biți ce compune tabla de joc. Vom genera deci, informațiile de culoare, componentele R, G, B în timp real.
+\subsection{Generatorul de semnale H/V}
+Ca și dependința, la controlerul VGA, avem un generator pentru impulsurile de sincronizare orizontale și verticale. Scopul acestui modul, este de a genera la portul VGA de pe placă, aceste semnale. Calculul valoriilor R, G, B se va face în controlerul VGA.
+
+
+\subsubsection{Schema bloc pentru modulul \emph{hvsync\_gen}}
+\begin{figure}[h]
+\includegraphics*[bb = 0 100mm 200mm 275mm, scale = 0.3]{hv_sync.eps}
+\caption{\small{Schema bloc a modulului \emph{hvsync\_gen}.}}
+\label{fig:fig_hvsync}
+\end{figure}
+
+\subsubsection{Intrări}
+\begin{itemize}
+\item \emph{clk} tactul la care va funcționa acest modul, este tactul global $50Mhz$.
+\end{itemize}
+
+\subsubsection{Ieșiri}
+\begin{itemize}
+\item \emph{wcntX} semnal $10$ biți ce reprezintă zona vizibilă din ecran pe orizontală. (0-639)
+\item \emph{wcntY} semnal $9$ biți ce reprezintă zona vizibilă din ecran pe verticală. (0-479)
+\item \emph{h\_sync} impulsul de sincronizare orizontală.
+\item \emph{v\_sync} impulsul de sincronizare verticală.
+\end{itemize}
+
+\subsection{Detalii de implementare}
+Informațiile necesare vizualizării pe monitor în modul 640x480@60Hz, au fost luate din standardul VESA, precum și alte documentații.\cite{vga_timings}
+
+\subsubsection{Informațiile generale}
+\begin{itemize}
+\item frecvența de reîmprospătare a monitorului: $60Hz$.
+\item frecvența de reîmprospătare verticală: $31.46875kHz$.
+\item impulsul de bază (pixel): 25.175 MHz.\footnote{În engl. pixel clock.}
+\end{itemize}
+
+\subsubsection{Informațiile de timp pentru orizontală}
+\begin{itemize}
+\item aria vizibilă: $640$ pixeli.
+\item timpul de întoarcere $64$ pixeli.\footnote{În engl. front \& back porch (timpii sunt exprimați în pixeli, se pot calcula cei reali folosind frecvența de baza).}
+\item Durata impulsului de sincronizare: $96$ pixeli.
+\item Întreaga linie, $800$ pixeli.
+\end{itemize}
+
+\subsubsection{Informațiile de timp pentru verticală}
+\begin{itemize}
+\item aria vizibilă: $480$ linii.
+\item timpul de întoarcere $43$ linii.
+\item Durata împulsului de sincronizare: $2$ linii.
+\item Întregul cadru: $525$ linii.
+\end{itemize}
+
+Precum se spune în \cite{epanorama}, "standardul este că nu există nici un standard", aceste valori diferă de la monitor la monitor, dar se pot ajusta din setări.\\
+În modulul \emph{hvsync\_gen}, aceste valori au fost înmulțite cu $2$, pentru că frecvența de bază de a pixelului, este de $50Mhz$. \emph{Designul} este format dintr-un circuit secvențial, care va incrementa un numărator pentru impulsul de sincronizare orizontală și un alt numărator pentru impulsul de sincronizare verticală. În momentul în care numărătoarele au atins valorile stabilite, se va genera la ieșire, impulsul în logică negativă. Primul numărător funcționează la frecvența de $50MHz$, iar cel pentru sincronizarea verticală se va incrementa o dată cu generarea unui impuls orizontal, deci se va incrementa o dată la fiecare linie. În momentul în care a ajuns la maxim, adică s-au desenat cele $480$ de linii, acesta se va reseta. În ambele cazuri se iau în considerare timpii de întoarcere a tunului de electroni. Rolul ferestrei date de \emph{wcntX} și \emph{wcntY} este a cunoaște coordonatele pixelului ce trebuie afișat.
+
+\subsection{Detalii de implementare pentru modulul \emph{vga\_controller}}
+
+\subsubsection{Dependințe}
+\emph{hvsync\_gen}
+
+\subsubsection{Schema bloc}
+\begin{figure}[h]
+\includegraphics*[bb = 0 100mm 200mm 275mm, scale = 0.3]{vga_controller.eps}
+\caption{\small{Schema bloc a modulului \emph{vga\_controller}.}}
+\label{fig:fig_vga_controller}
+\end{figure}
+
+\subsubsection{Intrări}
+\begin{itemize}
+\item \emph{clk} tactul la care va funcționa acest modul, este tactul global $50Mhz$.
+\item \emph{boardR} semnal $64$ biți reprezentând matricea \emph{R}, va fi afișat cu roșu pe monitor.
+\item \emph{boardB} semnal $64$ biți reprezentând matricea \emph{B}, va fi afișat cu albastru pe monitor. 
+\item \emph{boardM} semnal $64$ biți reprezentând matricea \emph{M}, mutările posibile pentru jucător, va fi afișat cu galben pe monitor.  
+\item \emph{coordX} semnal $3$ biți ce reprezintă coordonata \emph{X} curentă în tabla de joc, pătratul va fi colorat în alb.
+\item \emph{coordY} semnal $3$ biți ce reprezintă coordonata \emph{Y} curentă în tabla de joc, pătratul va fi colorat în alb. 
+\end{itemize}
+
+\subsubsection{Ieșiri}
+\begin{itemize}
+\item \emph{vga\_R} semnal $1$ bit ce reprezintă informația de culoare, componenta \emph{R}.
+\item \emph{vga\_G} semnal $1$ bit ce reprezintă informația de culoare, componenta \emph{G}.
+\item \emph{vga\_B} semnal $1$ bit ce reprezintă informația de culoare, componenta \emph{B}.
+\item \emph{vga\_v\_sync} impulsul de sincronizare verticală, preluat de la modulul \emph{hvsync\_gen}.
+\item \emph{vga\_h\_sync} impulsul de sincronizare orizontală, preluat de la modulul \emph{hvsync\_gen}.
+\end{itemize}
+
+În realitate, semnalul analogic aplicat intrărilor \emph{R, G, B} unui monitor, vor genera toată paleta de culori, atât cât permit materialele chimice folosite. În această placă de dezvoltare pe care o folosesc, ieșirile din FPGA sunt legate la mufă fiecare în serie cu o rezistență de $270\Omega$. În acest fel, este asigurată plaja de $0V - 0.7V$ acceptată. Cum din FPGA putem genera două valori, $0$ sau $1$ logic, vom avea astfel cele $8$ culori de bază.\\
+Considerăm un pătrat de pe tabla de joc cu latura de $32$ pixeli. Astfel, folosind ieșirile \emph{wcntX} și \emph{wcntY} de la modulul \emph{hvsync\_gen}, vom ști în orice moment ce pătrat din tabla de joc trebuie desenat, calculând câtul împărțirii lui \emph{wcntX} respectiv \emph{wcntY} la $32$. În acest proces sincron, vom folosi și un comparator pentru a determina dacă ne aflăm în partea de început a ecranului, pentru a evita desenarea multiplă. Pentru a genera culoarea adecvată, coordonatele aflate după împărțirea la latura pătratului ales, vor fi folosite pentru a afla valoarea poziției în tablourile \emph{R, B, M}. În acest fel, culoarea aleasă va fi \emph{roșu}, \emph{albastru}, \emph{galben} sau \emph{alb} pentru a evidenția pătratul pe care utilizatorul s-a poziționat. În orice alt caz, se va genera valoarea zero la ieșirile \emph{R, G, B}, deci pe monitor va apărea \emph{negru}.
+\subsection{Concluzii}
+În acest modul constantele se pot modifica, astfel încât să deplasăm pe monitor la stânga, dreapta, sus, jos tabla de joc. S-a testat pe un model de monitor marca \emph{DELL} și pe două modele de monitoare marca \emph{LG}. Rezultatele mai bune au fost obținute pe monitorul \emph{DELL}.
+
+\section{Miniclaviatura}
+\label{mini_klavier}
+Sunt puține comenzi necesare unui joc precum Reversi. Avem nevoie de a selecta poziția, avem două axe \emph{OX} și \emph{OY}, rezultă deci că patru butoane sunt ideale pentru a selecta poziția și un al cincelea pentru adăugarea discului la poziția aleasă. Poziția pe care ne aflăm va fi colorată în alb (vezi \ref{vga_ctrl}).\\
+Placa de dezvoltare (vezi \ref{placa}) prezintă $4$ butoane cu contact metalic, care sunt legate printr-un rezistor de pull-down la intrarea FPGA-ului. Butonul $5$ care reprezintă adăugarea discului pe tabla, va fi butonul rotativ, vom folosi doar funcția de buton, nu și cea de rotație. La fel ca la celălalte, butonul este legat la $3.3V$, iar la intrarea în FPGA vom avea o rezistență legată la masă. Adăugarea discului va fi posibilă doar dacă există acea tranziție posibilă (vezi \ref{game_formal}).\\
+Se știe că orice contact metalic suferă de o instabilitate în momentul apăsării. Datorită contactului metalic, fiind elastic, forma de undă va avea tranziții dese de la $0$ la $1$ și invers. Perioada de stabilizare este scurtă, dar este suficient ca acele tranziții parazite să fie interpretate greșit de către modulul de claviatură.\\
+Ca metodă de combatere,  voi folosi o metodă simplă, pe departe optimă, dar functionează pentru situația dată. Voi folosi un divizor de frecvența, intrarea butonului fiind citită cu o frecvență foarte mica, mult mai mică decât perioada de instabilitate. Va fi folosit un numărător pe $23$ de biți. Valoarea $23$ a fost aleasă empiric, încât dacă butonul este continuu apăsat, deplasarea poziției pe tablă să se facă suficient de lent pentru a o stăpâni și a putea fixa o poziție. Frecvența cu care se va mișca poziția selectată în cazul în care butonul este continuu apăsat, va fi de aproximativ $7Hz$, valoare ușor de controlat de către om.
+
+\subsection{Descrierea modulului}
+\subsubsection{Schema bloc}
+\begin{figure}[h]
+\includegraphics*[bb = 0 40mm 200mm 275mm, scale = 0.3]{xy_calculate.eps}
+\caption{\small{Schema bloc a modulului \emph{xy\_calculate}.}}
+\label{fig:fig_xy_calculate}
+\end{figure}
+
+\subsubsection{Intrări}
+\begin{itemize}
+\item \emph{clk} tactul la care va funcționa acest modul, este tactul global $50Mhz$.
+\item \emph{east}, \emph{west}, \emph{north}, \emph{south} semnalele primite de la butoane, reprezintă cele 4 direcții de deplasare pe tablă.
+\item \emph{knob} semnalul butonului rotativ, doar cel de apăsare, reprezintă poziționarea unui disc la poziția selectată pe tablă.
+\item \emph{RST} semnalul de resetare pentru acest modul, va fi legat la resetul global.
+\end{itemize}
+
+\subsubsection{Ieșiri}
+\begin{itemize}
+\item \emph{enter} semnalul ce va comanda adăugarea unui disc pe tablă.
+\item \emph{X} semnal pe $3$ biți ce reprezintă poziția curentă, coordonata \emph{X} pe tablă.
+\item \emph{Y} semnal pe $3$ biți ce reprezintă poziția curentă, coordonata \emph{Y} pe tablă.
+\end{itemize}
+
+\subsection{Detalii de implementare}
+Modulul este format dintr-un proces sincron cu semnalul \emph{clk}, la fiecare tact incrementându-se un numărător.
+\begin{fragmentsursa}
+\begin{scriptsize}
+\begin{verbatim}
+always @(posedge clk) begin
+    if ( RST ) begin
+        Z <= 0;
+        X <= 0;
+        Y <= 0;
+        enter <= 0;
+    end 
+    else begin
+        Z <= Z + 1;
+        ...
+         end
+...
+end         
+\end{verbatim}
+\end{scriptsize}
+\caption{Incrementarea registrului Z}
+\label{xy_calculate_frag1}
+\end{fragmentsursa}
+În cazul în care numărătorul ajunge la valoarea maximă, se vor testa semnalele de intrare care vin de la butoane. Pentru fiecare semnal, dacă are valoarea $1$, se vor face modificările corespunzătoare registrelor \emph{X, Y} și \emph{enter} în felul următor: Dacă semnalul \emph{south} este activat, atunci registrul \emph{Y}, coordonata Y pe tablă, se va decrementa, iar dacă e semnalul \emph{north} activ, atunci se va incrementa.\footnote{În realitate e invers datorită orientării plăcii.} Dacă semnalul \emph{east} este activ, atunci din registrul \emph{X} se va scădea o unitate, iar dacă semnalul activ este \emph{west}, se va adăuga o unitate. Dacă semnalul \emph{knob} este găsit activ, atunci registrul \emph{enter} va avea valoarea $0$. În cazul în care semnalul \emph{RST} este $1$, atunci toate registrele vor fi setate pe $0$. (vezi \ref{xy_calculate_frag1})\\
+Dacă vor fi active mai multe semnale, atunci doar unul se va lua în considerare. Prioritatea este \emph{east, west, north, south, knob}.
+\subsection{Concluzii}
+Modulele \emph{vga\_controller} și \emph{xy\_calculate} au rolul de interfața I/O pentru acest proiect. În acest fel un jucător uman poate să joace Reversi interactiv cu această placă. Bineînțeles, monitorul și miniclaviatura se pot înlocui cu un ecran LCD cu touchscreen,\footnote{Ecran sensibil la atingere.} dar nu a fost scopul acestei lucrări.
+
+
+\section{Modulul pentru transmitere serială}
+\label{transmitere_seriala}
+A fost de multe ori nevoie de a vizualiza anumite informații, de a construi statistici. Placa de dezvoltare are în dotare două porturi seriale RS232. Nivelurile de tensiune necesare sunt ajustate pe placă, singurul efort rămâne de a construi protocolul. Modul folosit este simplu, linia Tx este ținută activă în modul \emph{idle}\footnote{Adică când nu se transmit date.} iar în momentul transmiterii, se va trimite un bit de start, având valoarea $0$, după care urmează cei $8$ biți de date, după care urmează un singur bit de stop, reprezentat prin $1$ logic. După transmitere linia intră din nou în \emph{idle} și va fi continuu activă. Viteza de transmitere va fi de $115200$ baud. În general, pentru a genera un astfel de tact, se folosește un oscilator de $1.8432MHz$. Acesta divizat cu valoarea $16$ ne va da exact $115200Hz$. Asta înseamnă că la fiecare $16$ impulsuri de la oscilator, se va genera un impuls pentru interfața serială. Această placă având un oscilator de $50MHz$, va trebui să găsim un factor cu care să dividem această frecvență. Nefiind o prioritate în acest proiect, modulul a fost preluat din \cite{fpga4fun}.
+
+\section{Transmiterea serială a unui număr $32$ biți, în format ASCII}
+\label{modul_ta}
+Acest modul e necesar pentru o vizualizare ușoară a datelor trimise. Astfel, în loc să trimitem un număr $32$ de biți în forma lui binară, vom trimite același număr în format ASCII. Asta înseamnă că în loc să trimitem pe interfața serială $4$ octeți, se vor trimite $8$ octeți. Fiecare octet din cei $8$ reprezintă o cifră hexadecimală a numărului pe $32$ biți pe care dorim să-l transmitem. După transmiterea unui număr, se va transmite octetul 0x0D care reprezintă \emph{line feed}.
+
+\subsection{Descrierea modulului}
+\subsubsection{Dependințe}
+Modulul \emph{rs232} (vezi \ref{transmitere_seriala}).
+
+\subsubsection{Schema bloc}
+\begin{figure}[h]
+\includegraphics*[bb = 0 100mm 200mm 275mm, scale = 0.3]{time_cnt.eps}
+\caption{\small{Schema bloc a modulului \emph{time\_analysis}.}}
+\label{fig:fig_time_analysis}
+\end{figure}
+
+\subsubsection{Intrări}
+\begin{itemize}
+\item \emph{clk} tactul la care va funcționa acest modul, este tactul global $50Mhz$.
+\item \emph{time\_cnt} valoarea de $32$ biți pe care dorim să o transmitem.
+\item \emph{start} semnal $1$ bit care reprezintă că se dorește începerea unei noi transmisii seriale.
+\item \emph{RST} semnalul de resetare pentru acest modul, va fi legat la resetul global.
+\end{itemize}
+
+\subsubsection{Ieșiri}
+\begin{itemize}
+\item \emph{busy} semnal $1$ bit reprezintă starea modulului, dacă este $1$ înseamnă ca modulul este deja ocupat cu o transmisie. Modulul ce comandă acest modul, va trebui să aștepte ca linia \emph{busy} să fie $0$.
+\item \emph{TxD} semnalul care va fi legat la portul serial, linia Tx. Pe această linie se serializează informația transmisă.
+\end{itemize}
+
+\subsection{Detalii de implementare}
+Modulul de transmitere serială este construit să trimită $8$ biți de date la o transmisie. Dorind să trimitem $32$ de biți, va trebui să-i trimitem pe rând. Proiectarea va fi în felul următor: Vom selecta pe rând din \emph{time\_cnt} câte $4$ biți, care vor parcurge un automat fint care va face transformarea în ASCII și va seta corespunzător semnalele de așteptare.
+
+\subsubsection{Automatul finit}
+\begin{figure}[h]
+\includegraphics*[scale = 0.4]{graf_ta.eps}
+\caption{\small{Automatul finit care reprezintă transformarea a $4$ biți într-o reprezentare pe $8$ biți, după care va genera semnalele corespunzătoare modululul rs232 pentru serializarea lui.}}
+\label{fig:fig_aut1}
+\end{figure}
+
+În starea GATHER\_0 se va seta doar semnalul \emph{busy\_nibble}, semnal ce va deveni activ în starea următoare. Rolul este de a informa procesul care alimentează cu bucăți de câte $4$ biți, că există deja o bucată în curs de transmitere.\\
+În starea GATHER, se va face transformarea din $4$ biți în $8$ biți fiind reprezentarea ASCII.
+
+\begin{fragmentsursa}
+\begin{scriptsize}
+\begin{verbatim}
+case (nibble)
+   4'b0000 : hex_byte_d = 8'h30;
+   4'b0001 : hex_byte_d = 8'h31;
+   4'b0010 : hex_byte_d = 8'h32;
+   4'b0011 : hex_byte_d = 8'h33;
+   4'b0100 : hex_byte_d = 8'h34;
+   4'b0101 : hex_byte_d = 8'h35;
+   4'b0110 : hex_byte_d = 8'h36;
+   4'b0111 : hex_byte_d = 8'h37;
+   4'b1000 : hex_byte_d = 8'h38;
+   4'b1001 : hex_byte_d = 8'h39;
+   4'b1010 : hex_byte_d = 8'h61;
+   4'b1011 : hex_byte_d = 8'h62;
+   4'b1100 : hex_byte_d = 8'h63;
+   4'b1101 : hex_byte_d = 8'h64;
+   4'b1110 : hex_byte_d = 8'h65;
+   4'b1111 : hex_byte_d = 8'h66;
+endcase
+\end{verbatim}
+\end{scriptsize}
+\caption{Translatarea din binar ($4$ biți), în ASCII ($8$ biți).}
+\label{ta_frag1}
+\end{fragmentsursa}
+
+Acest cod definește valoarea ASCII corespunzătoare oricărei valori posibile de $4$ biți. În circuistică, de obicei programul de sintetizare va genera multiplexoare. Ca și observație, programul de sinteză va observa că în acest \emph{case} sunt acoperite toate cazurile și nu se poate întâmpla ca două cazuri să fie valide în același timp. Astfel, nu se vor genera \emph{latch-uri} sau codificatoare prioritare.\\
+În starea TRANSMIT\_0, se va activa linia de \emph{TxD\_start} de la modulul RS232, care va începe serializarea datelor.\\
+În starea TRANSMIT se va aștepta până cei $8$ biți de date vor fi serializați, adică semnalul \emph{txd\_busy} va fi $0$. În momentul în care linia \emph{busy} a modulului RS232 indică că datele au fost serializate, se va trece în starea DONE. În acest fel, s-au transmis $4$ biți din cei $32$ ai intrării \emph{time\_cnt}.\\
+În paralel, un proces sincron cu semnalul \emph{clk} va comanda acest automat și va pregăti cei $4$ biți care urmează să fie transformați și serializați. 
+\begin{fragmentsursa}
+\begin{scriptsize}
+\begin{verbatim}
+if ( (how_many_q < 5'b01000) && (~busy_nibble_q) ) begin
+    busy_q <= 1;
+    data <= { data[28:0], data[31:28] };
+    how_many_q <= how_many_q + 1;
+    state_q <= GATHER_0;
+end	
+\end{verbatim}
+\end{scriptsize}
+\caption{Pregătirea a $4$ biți de date.}
+\label{ta_frag2}
+\end{fragmentsursa}
+Registrul \emph{how\_many} memorează câte grupuri de $4$ biți au fost serializate. Acest lucru e necesar pentru a trimite în final încă un octet, acela de \emph{line feed}. Observăm în acest fragment de cod că se așteaptă ca linia \emph{busy\_nibble} să fie $0$. În caz că nu se trimite nimic, se va face o rotire pe biți a registrului \emph{data} ce conține cei $32$ de biți ce trebuie transmiși, după care se va seta automatul finit în starea de start, adică GATHER\_0.
+\subsection{Concluzii}
+Acest modul a fost folosit pentru a trimite date precum: în cât timp se gândește o mutare, sau ce scor au generat anumite stări ale jocului. Datele transmise pot fi folosite pentru statistici, fiind și resursa graficelor de comparație între FPGA și implementarea pe un CPU general.\\
+Placa a fost conectată prin cablul serial la un computer, unde s-au capturat datele transmise.
+
+\section{Modulul de explorare}
+\label{modul_game_ai}
+În continuare, urmează implementarea efectivă a algoritmului minmax. Vom folosi aici toate modulele considerate critice prezentate. Va fi nevoie de a afla mulțimea $M$, avem funcția de tranziție $\delta$, urmează proiectarea modulului care să facă închegarea. Minmax, fiind un algoritm de tip \emph{depthfirst} \ref{capitol_minmax}, va fi nevoie construirea unei stive în care se vor memora stările jocului de la fiecare nivel în arbore. Este nevoie de un număr mic de structuri memorate, pentru că este o explorare în adâncime. Considerăm momentan memorarea de stări ca fiind ceva abstract. În secțiunea \ref{modul_memory_bram} voi prezenta metoda folosită. Momentan considerăm o memorie adresabilă prin nivelul arborelui, care ne va furniza structura ce definește starea jocului memorată la care se adaugă scorul, adică valoarea minmax\footnote{Se mai spune și \emph{game-theoretic value}.}.\\
+Algoritmului de explorare în hardware, i se potrivește foarte bine ca model, un automat finit. Avem nevoie de stări precum: generează mulțimea $M$, alege strategia $m_{i} \in M$, execută tranziția $\delta$ pentru starea curentă și strategia $m_{i}$, scrie în memorie structura aferentă stării curente, treci la nivelul următor în arbore, obtine $u(s_{k})$ care reprezintă scorul stării $s_{k}$, sau utilitatea, mergi în sus cu un nivel în arbore, etc. Toate aceste acțiuni se vor întâmpla secvențial și sunt foarte bine definite.
+\begin{figure}[h]
+\includegraphics*[scale = 0.4]{arbore_1.eps}
+\caption{\small{Exemplu arbore de joc.
+$s_{0}$, $s_{1}$, $s_{k}$, $s_{m}$, $s_{q}$ reprezintă stări de joc. $m_{0}$, $m_{1}$ reprezintă strategii posibile.}}
+\label{fig:arbore_1}
+\end{figure}
+Ce putem optimiza la acest modul, este de a avea cât mai puține stări în automat. Se vede acum de ce era necesar ca modulele folosite să aibă răspuns într-un timp foarte scurt, adică într-un ciclu de ceas în cazul nostru, pentru că astfel vom avea un număr minim de stări de așteptare. Dacă am dori să folosim altfel de algoritmi, de exemplu cei care presupun o ordonare a strategiilor înainte de a fi explorate stările în adâncime, s-ar putea să fie în final foarte ineficient, ordonarea fiind costisitoare.
+
+\subsection{Descrierea modulului}
+Comparativ cu restul modulelor prezentate, acesta este mult mai stufos. Complexitatea se datorează și faptului că este nevoie comunicaera cu alte module. De exemplu modulul de tranziționare \emph{b\_move} se va afla în exterior, pentru că este folosit și de alt modul. Modulul de tranziționare nu se duplică pentru că deja ocupă o parte considerabilă din resurse și este mai bine atunci să fie un acces partajat. Nu apare aici nici un deficit de viteză, pentru că nimeni nu va dori folosirea simultană a modulului \emph{b\_move}. Prima dată este folosit în explorare, iar în rest este folosit în momentul în care jucătorul uman a ales mutarea și prin apăsarea butonului va poziționa discul. În acel moment procesorul de Reversi nu va folosi modulul.
+\subsubsection{Denumire}
+\emph{game\_ai}
+\subsubsection{Dependințe}
+Modulul \emph{b\_move} (vezi \ref{bmove_combinational}).\\
+Modulul \emph{moves\_map} (vezi \ref{modul_moves_map}).\\
+Modulul \emph{memory\_bram} (vezi \ref{modul_memory_bram}).\\
+Modulul \emph{heuristics} (vezi \ref{modul_heuristics}).\\
+Modulul \emph{RB\_cnt} (vezi \ref{modul_RB_cnt}).
+
+\subsubsection{Schema bloc}
+\begin{figure}[h]
+\includegraphics*[bb = 0 0mm 200mm 275mm, scale = 0.3]{xilinx_gai.eps}
+\caption{\small{Schema bloc a modulului \emph{game\_ai}.}}
+\label{fig:fig_gameai}
+\end{figure}
+
+\subsubsection{Intrări}
+\begin{itemize}
+\item \emph{clk} tactul la care va funcționa acest modul, este tactul global $50Mhz$.
+\item \emph{RST} semnalul de resetare pentru acest modul, va fi legat la resetul global.
+
+\item \emph{init\_red} semnal $64$ biți ce reprezintă matricea \emph{R}, reprezentând starea $s_{0}$ a jocului, de unde va începe explorarea.
+\item \emph{init\_blue} semnal $64$ biți ce reprezintă matricea \emph{B}, reprezentând starea $s_{0}$ a jocului, de unde va începe explorarea.
+\item \emph{red\_in} semnal $64$ biți ce reprezintă matricea\emph{R} primită de la modulul \emph{b\_move}.
+\item \emph{blue\_in} semnal $64$ biți ce reprezintă matricea\emph{B} primită de la modulul \emph{b\_move}.
+\item \emph{go} semnal $1$ bit ce reprezintă inițierea unei noi explorări.
+\end{itemize}
+
+\subsubsection{Ieșiri}
+O parte din ieșiri sunt semnale folosite pentru depanare și nu vor fi prezentate aici, pentru că nu influențează cu nimic.
+\begin{itemize}
+\item \emph{n\_red} semnal $64$ de biți ce reprezintă matricea \emph{R} care va fi conectată la intrarea modulului \emph{b\_move}.
+\item \emph{n\_blue} semnal $64$ de biți ce reprezintă matricea \emph{B} care va fi conectată la intrarea modulului \emph{b\_move}.
+\item \emph{m\_x} semnal $3$ biți ce reprezintă coordonata X a unei mutări. Semnalul este conectat la modulul \emph{b\_move}.
+\item \emph{m\_y} semnal $3$ biți ce reprezintă coordonata Y a unei mutări. Semnalul este conectat la modulul \emph{b\_move}.
+\item \emph{o\_pl} semnal $1$ bit ce va fi conectat la \emph{b\_move} la intrarea \emph{player} și reprezintă jucătorul care e la rând.
+\item \emph{bestX, bestY} reprezintă mutarea cea mai bună aleasă de algoritm. Semnalele sunt pe $3$ biți fiecare.
+\item \emph{thinking} semnal $1$ bit care va fi $1$ logic cât timp modulul explorează în spațiul stărilor.
+\item \emph{ai\_pass} semnal $1$ bit care va fi $1$ logic dacă nu există nici o mutare posibilă, $M_{s_{0}} = \{\emptyset\}$, adică trebuie să mute tot adversarul.
+\item \emph{done} semnal $1$ bit care va fi activat în momentul în care s-a terminat explorarea.
+\end{itemize}
+
+\subsection{Detalii de implementare}
+Căutarea în arbore este implementată folosind un automat finit cu $15$ stări. Pentru a proiecta mult mai ușor, s-a considerat că intotdeauna se „operează” asupra unor registre interne care memorează matricile \emph{R}, \emph{B}, \emph{M}, cele $3$ dimensiuni prezente în această reprezentare. Întotdeauna când avem noi valori pentru aceste matrici, fie că sunt citite din memoria RAM, sau că sunt primite de la modulul \emph{b\_move} (adică a avut loc o tranziție), valorile vor fi memorate în aceste registre interne. La fel se procedează și cu alte valori, există un singur registru intern pentru stocarea celei mai bune mutări.\footnote{De fapt sunt două, unul pentru X și altul pentru Y.} În acest fel este mult mai ușor să gândim, pentru că știm că trebuie să modificăm într-un singur loc, si vom lua o singură decizie, de a memora sau nu noile valori primite.\\
+Circuitul este sincron cu semnalul \emph{clk}, iar starea următoare a automatului, precum și orice semnal de ieșire, va fi calculat continuu, adică într-un circuit combinațional și luat în considerare sincron, adică doar când avem un front crescător al semnalului \emph{clk}. Mai multe despre această paradigmă folosită se poate citi în secțiunea \ref{hardware_gooddesign}.\\
+Dacă semnalul \emph{RST} este activ, atunci toate registrele interne se vor reseta, valoarea lor devenind \emph{0}, iar starea curentă a automatului va deveni starea \emph{RESET}. Dacă \emph{RST} nu este activ, registrele interne își vor păstra starea, iar dacă semnalul \emph{go} este găsit activ, atunci registrele interne corespunzătoarea matricilor \emph{R, B} se vor încărca cu valorile de la intrare \emph{init\_red}, \emph{init\_blue}.
+\begin{figure}[h]
+\includegraphics*[scale = 0.4]{graf_gai.eps}
+\caption{\small{Automatul de explorare. Este de fapt doar un graf de stări, nefiind scrise și ieșirile/condițiile de tranziție.}}
+\label{fig:fig_aut}
+\end{figure}
+
+În starea \emph{RESET} avem două tranziții posibile. Automatul rămâne în această stare, până când primește semnalul \emph{go}. Dacă semnalul de intrare \emph{go} este activ, se va trece în starea \emph{EXPLORE}, semnalul \emph{thinking} va deveni $1$ iar registrul intern pentru reprezentarea jucătorului, \emph{pl}, se poziționează pe $1$, reprezentând \emph{roșu}.
+Starea \emph{EXPLORE} tranziționează necondiționat în starea \emph{EXPLORE\_0}. Rolul acestei tranziții suplimentare, este de a aștepta rezultatul de la modulul \emph{moves\_map}. La ieșirile conectate la modulul \emph{b\_move} avem direct conectate ieșirile registrelor interne care reprezintă \emph{R, B} și coordonatele mutării. Astfel, după o încărcare a registrelor interne, la ciclul următor de ceas, bistabilele vor bascula valorile de la intrare. Modulul \emph{moves\_map} este de asemenea conectat direct la reprezentarea internă pentru \emph{R, B}, ceea ce înseamnă ca el va primi intrările un impuls mai târziu după ce au fost încărcate, de aceea este necesară starea de așteptare.\\
+În starea \emph{EXPLORE\_0} putem culege deja ieșirile de la modulul \emph{moves\_map} și le vom încărca în reprezentarea internă a lui \emph{M}, care după cum am spus, se va încărca cu un impuls mai târziu. În această stare se va ajunge tot timpul când se dorește explorarea unei stări noi, niciodată de la revenirea dintr-un nivel superior. Se vede și în \ref{fig:fig_aut} că există o singură tranziție spre această stare. Fiind un nod nou, vom porni cu o nouă valoare minmax, care se va seta în funcție de jucător. Aceasta poate fi $-\infty$ sau $+\infty$. Voi reprezenta aceste valori printr-un număr de $20$ de biți, în care $1$ bit reprezintă semnul, numerele fiind reprezentate în complement de $2$. În registrul \emph{best\_value} avem cea mai bună valoare minmax pentru nodul respectiv, iar în registrul \emph{max\_p} avem cea mai bună valoare primită de la stăriile de pe un nivel superior în arbore. În \ref{fig:arbore_1} ar însemna că \emph{max\_p} este valoarea primită de $s_{1}$ de la $s_{m}$ și $s_{q}$, iar \emph{best\_value} este cea mai bună valoare pentru jucătorul respectiv în acea stare. Fiind o stare încă neexplorată, vom porni cu aceste valori setate pe $-\infty$ pentru jucatorul \emph{roșu}, considerat algoritmul din FPGA și cu $+\infty$ pentru jucătorul \emph{albastru} care este adversarul și va dori minimizarea scorului. Tot în această stare se face și testul de mutări vide. Dacă ne aflăm la nivelul $0$ în arbore, adică starea inițială, iar matricea $M$ este toată $0$, adică $M = \emptyset $, înseamnă că nu avem mutări valide și trebuie să lăsăm adversarul să facă o mutare. Tranziția va fi spre starea \emph{FINISH}, iar semnalul de \emph{pass} va fi activat.
+În starea \emph{EXPLORE\_M} este inima algoritmului. Aici are loc selecția unei mutări din setul $M$ determinat, ieșirile din \emph{moves\_map} fiind înregistrate deja în această stare, aici are loc și calcularea valorilor $\alpha$ și $\beta$ ale algoritmului. Selectarea mutării se va face printr-un decodificator prioritar. Acest lucru ne oferă șansa să selectăm ca prima mutare o mutare considerată mai bună după poziționarea ei. Tehnica se numește \emph{killer moves} \ref{killer_moves}, iar ca o reprezentare simplă, vom selecta colțurile prima dată.\cite{othello_fang, othello_master} 
+\begin{fragmentsursa}
+\begin{scriptsize}
+\begin{verbatim}
+...
+if ( M_q[0] ) begin
+    X_d = 0;
+    Y_d = 0;
+end
+else
+if ( M_q[7] ) begin
+    X_d = 7;
+    Y_d = 0;
+end
+else
+if ( M_q[63] ) begin
+    X_d = 7;
+    Y_d = 7;
+end
+else
+if ( M_q[57] ) begin
+    X_d = 1;
+    Y_d = 7;
+end
+...
+\end{verbatim}
+\end{scriptsize}
+\caption{Implementarea tehnicii \emph{killer moves}, decodificatorul prioritar.}
+\label{frag_killer}
+\end{fragmentsursa}
+Această metodă de ordonare a mutărilor este foarte simpla, nu ne constă practic nimic, vine datorită designului. Este singurul tip de ordonare ce este permisă fără a consuma în plus resurse de timp. Îmbunătățirea globală a algoritmului poate fi însă foarte mare, deoarece un disc pus în colț, poate genera un scor foarte mare, devenind astfel optimă tăierea $\alpha-\beta$. Dacă nu avem mutări valide și suntem din nou pe nivelul $0$ al arborelui, înseamnă că nu mai avem stări de explorat, iar automatul va tranziționa în starea \emph{FINISH}, semnalul \emph{done} fiind activat. Dacă nu mai avem mutări, dar nu suntem pe nivelul $0$, înseamnă că am ajuns într-o stare în care ar trebui să facem \emph{pass}, iar dacă explorăm nodul pentru prima dată, vom tranziționa în starea \emph{EXPLORE\_PASS\_M2}.\footnote{Aici mă refer la oricare jucător. Este vorba de cel ce e la rând pe nivelul $p$ în arbore.} Dacă nodul nu este explorat pentru prima dată și nu mai avem mutări, înseamnă ca nodul curent a fost epuizat și putem să ne întoarcem în arbore la nivelul $p-1$, vom tranziționa deci în starea \emph{EXPLORE\_FETCH}, iar jucătorul $p$ va deveni $\lnot p$, adică MIN și MAX își schimbă rolurile.\footnote{A nu se face confuzie cu $p$ notația pentru nivelul la care explorăm în arbore.} Urmează calculul valoriilor \emph{min} și \emph{max}. Considerăm că suntem la un nivel MAX, adică algoritmul trebuie să facă mutarea. Pentru fiecare nod, avem un registru în care am memorat cea mai bună valoare estimată.\footnote{Adică, game-theoretic value.} Dacă o valoare primită de la un fiu din arbore, adică dacă una din strategii este mai bună decât cea aleasă până în acel moment, atunci vom actualiza cea mai bună valoare, precum și mutarea (adică perechea de coordonate (x,y)). Dacă cea mai bună valoare  estimată momentan, adică tot \emph{best\_value}, este mai mare decât $\alpha$, atunci putem îngusta fereastra și vom actualiza pe $\alpha$. Nodurile pe nivelul MIN ce vor urma, au șanse mai mari să fie tăiate, deci timpul de explorare va fi mai mic. Urmează testul pentru $\beta$: Dacă estimarea noastră este mai mare decât $\beta$, facem tăierea, mergem la nivelul $p-1$, jucătorul $p$ devine $\lnot p$ și tranziționăm în starea \emph{EXPLORE\_FETCH}. În cazul în care ne aflăm pe un nivel MIN, atunci rolurile se inversează. Se va îngusta fereastra modificând pe $\beta$ și nodurile vor fi tăiate de către $\alpha$.
+\begin{fragmentsursa}
+\begin{scriptsize}
+\begin{verbatim}
+...
+/* considerăm nod MAX */
+if ( pl_q ) begin 
+    /* o estimare mai bună decât cea curentă */
+    if (max_p_q > best_value_q ) begin
+        /* actualizăm */
+        best_value_d = max_p_q;
+        /* dacă suntem pe nivelul 0, atunci modificăm și mutare aleasă */
+        if ( sp_q == 0 ) begin
+            best_X_d = last_X_q;
+            best_Y_d = last_Y_q;
+        end
+    end
+    else begin
+        // we return best_value on upper level
+        max_p_d = best_value_q;
+    end
+
+    /* modificăm fereastra */							
+    if ( best_value_q > alfa_q ) begin
+       alfa_d = best_value_q;
+    end
+
+    /* tăierea beta */							
+    if ( best_value_q >= beta_q )  begin
+        /* nivelul anterior în arbore */
+        sp_d = sp_q - 1;
+        /* p devine !p */
+        pl_d = ~pl_q;
+        state_d = EXPLORE_FETCH;
+        max_p_d = best_value_q;
+    end
+end
+...
+\end{verbatim}
+\end{scriptsize}
+\caption{Min-Max cu $\alpha-\beta$. (exemplificare pentru MAX)}
+\label{frag_minmax}
+\end{fragmentsursa}
+Un alt lucru important ce se mai face în această stare, e că se va poziționa bitul corespunzător mutării selectate, pe $0$, astfel modificându-se intrările de la registrul intern corespunzător matricii \emph{M}. După un impuls de ceas, intrările vor fi preluate de bistabilele ce formează registrul intern \emph{M}, iar la ieșire vor fi basculate vechile valori. Orice valoare basculată va fi citită doar dacă e nevoie de ea.\\
+În cazul tranziționării în starea \emph{EXPLORE\_M2}, înseamnă că am ales o tranziție și dorim trecerea la un nivel mai jos în arbore.\footnote{Nivel mai jos, dar $p$ va crește.} Trebuie deci să salvăm starea curentă. Starea curentă presupune matricile \emph{R, B} și matricea \emph{M} modificată, adică s-a pus pe $0$ bitul corespunzător tranziției alese. Salvăm și valorile $\alpha$, $\beta$ și \emph{best\_value}. Pentru a fi salvate, înseamnă ca în registrele interne corespunzătoare să avem acele valori. Astfel, dacă în starea \emph{EXPLORE\_M} am modificat harta mutărilor posibile, modificarea va apărea în registru după un impuls de tact, adică în starea \emph{EXPLORE\_M2}. Scrierea în memorie durează un ciclu, astfel în memorie datele vor fi scrise abia în starea următoare. Starea \emph{EXPLORE\_M2} este deci o stare de așteptare, va aștepta ca datele să fie scrise în memorie. Adresa la care sunt scrise este dată de registrul în care avem memorat nivelul la care ne aflăm în arbore, adică registrul intern \emph{sp}.\footnote{Vine de la \emph{stack-pointer}, pentru că această versiune de min-max necesită simularea unei stive.} Semnalul de scriere în memorie, \emph{we}, este activ în această stare. Un alt lucru important ce se întâmplă, este că toate valorile sunt pregătite și pentru modulul \emph{b\_move}, care va transforma date continuu, e datoria noastră să le culegem dacă avem nevoie de ele. În starea următoare deci, vom avea și un răspuns de la \emph{b\_move} care ne interesează, fiind o nouă stare a jocului, s-a făcut deci mutarea aleasă de decodificatorul prioritar.\\
+În starea \emph{EXPLORE\_STORED} avem datele scrise în memorie. Tot aici, avem și ieșirile valide de la modulul \emph{b\_move}, care a necesitat un ciclu de tact. Vom încărca registrele interne corespunzătoare matricilor \emph{R, B} cu valorile primite. Vom trece la alt nivel în arbore, deci jucătorul $p$ devine $\lnot p$. Avem o singură posibilitate, tranziționăm în starea \emph{EXPLORE\_STORED\_0}.
+\begin{fragmentsursa}
+\begin{scriptsize}
+\begin{verbatim}
+...
+If ( sp_q < MAX_DEPTH - 1) begin
+    sp_d = sp_q + 1;
+    state_d = EXPLORE;
+end
+else begin
+    state_d = LEAF;
+end
+...
+\end{verbatim}
+\end{scriptsize}
+\caption{EXPLORE\_STORED\_0: Testăm dacă avem un nod frunză sau continuăm explorarea.}
+\label{frag_minmax2}
+\end{fragmentsursa}
+În \ref{frag_minmax2} \emph{sp\_q} reprezintă ieșirea registrului intern în care este memorat nivelul la care am ajuns în arbore. Dacă nivelul curent este cu minim $1$ mai mic decât nivelul maximm până la care explorăm, atunci vom incremneta nivelul arborelui, explorăm deci mai adânc, ne întoarcem în starea \emph{EXPLORE} unde se reia tot ciclul. Altfel, înseamnă că avem un nod terminal și tranziționăm în starea \emph{LEAF}.\\
+Starea \emph{LEAF} este doar o stare de așteptare, intrările sunt pregătite pentru modulul \emph{heuristics}. Intrările de care este nevoie, sunt: reprezentarea internă a matricilor \emph{R, B, M}. De \emph{M} este nevoie pentru a calcula \emph{mobilitatea} (vezi \ref{mobility}). Nivelul la care ne aflăm în momentul în care suntem într-un nod terminal, este întotdeauna unul par, astfel întotdeauna dintr-o stare terminală va urma la rând jucătorul de pe nivelul $0$. Acest lucru contează pentru a ști pentru cine este matricea $M$. Tranziționăm doar în starea 
+\emph{LEAF\_0}.\\
+\begin{fragmentsursa}
+\begin{scriptsize}
+\begin{verbatim}
+...
+LEAF_0: begin
+            /* starea viitoare */
+            state_d = EXPLORE_FETCH;
+            /* culegem valoarea euristicii */
+            max_p_d = heur_w;
+            /* p devine !p */
+            pl_d = ~pl_q;				  
+        end
+...
+\end{verbatim}
+\end{scriptsize}
+\caption{starea LEAF\_0}
+\label{frag_minmax3}
+\end{fragmentsursa}
+				
+În această stare, \emph{LEAF\_0}, culegem ieșirea modulului care a calculat euristica și urmează să ne întoarcem în arbore. Pentru asta, va trebui să citim din memorie starea de pe nivelul anterior. Vom tranzitiona deci în starea \emph{EXPLORE\_FETCH}. În registrul intern \emph{max\_p} se va reține valoarea euristicii și înseamnă cea mai bună estimare a nodului, indiferent de câți fii ar avea\footnote{Evident, în cazul unui nod terminal, nu va avea fii.}. Jucătorul $p$ devine $\lnot p$, pentru că trecem la alt nivel în arbore. Se observă că nu decrementăm registrul \emph{sp}, pentru că în \ref{frag_minmax2} nu am incrementat în momentul în care urma un nod terminal. Motivul, e pentru că nu are rost, pentru că nu dorim să salvăm starea unui nod terminal.\\
+În starea \emph{EXPLORE\_FETCH} în acest caz tranziționăm în \emph{EXPLORE\_FETCH\_0}. În starea următoare, vom citi valorile de la ieșirea memoriei, care sunt deja disponibile, prin faptul că nu am modificat registrul \emph{sp}. Se vor încărca toate datele din memorie în registrele interne, adică: $<R, B, M>$, valoarea \emph{best}, $\alpha$, $\beta$, precum și bitul care indică dacă nodul este explorat pentru prima dată. Starea în care tranziționăm este \emph{EXPLORE\_M}. Motivul pentru care tranziționăm în această stare și nu în \emph{EXPLORE}, este pentru că acum nu trebuie să așteptăm rezultat de la modulul \emph{moves\_map}, pentru că ne întoarcem de la un nivel de mai de jos din arbore, iar harta mutărilor pentru starea respectivă o avem în memorie.\\
+Ajunși din nou în starea \emph{EXPLORE\_M}, presupun acum că tranziționăm în \emph{EXPLORE\_FETCH}, deci înseamnă cu nu mai sunt posibilități de explorat din această stare de joc și va trebui să mergem la un nivel mai sus în arbore. Acum are sens starea de așteptare, pentru ca trebuie să așteptăm actualizarea registrului \emph{sp}.\\
+În cazul în care nodul ce trebuie explorat nu are mutări posibile, înseamnă că jucătorul respectiv trebuie să cedeze rândul și tranziționăm în starea \emph{EXPLORE\_PASS\_M2}. Trecem prin \emph{EXPLORE\_PASS\_STORED}, configurația va fi scrisă în memorie, după care ajungem în starea \emph{GAME\_OVER\_TEST1}. Testul este necesar pentru a vedea dacă și jucătorul următor are sau nu mutări posibile, iar în cazul în care nu are, înseamnă ca nodul respectiv este unul în care jocul se termină. În această stare, ieșirile de la modulul \emph{RB\_cnt} sunt valide, știm deci fiecare jucător ce scor are.\\
+Dacă scorul adversarului este mai mare (vezi \ref{frag_minmax4}), atunci vom da un scor foarte mic (negativ) stării de joc, pentru că vrem să evităm să ajungem în această stare. În caz contrarm, vom da ca și scor o valoare mare, la care se adugă diferența de discuri, astfel se va maximiza și scorul, va avea grijă să câștige cu un scor cât mai mare posibil. Vom trece mai departe în starea \emph{EXPLORE\_FETCH} a automatului, pentru că nodul a fost explorat, știm cine va câștiga chiar, ne întoarcem având în registrul \emph{max\_p} scorul.\\
+\begin{fragmentsursa}
+\begin{scriptsize}
+\begin{verbatim}
+...
+GAME_OVER_TEST1: begin
+    // no more moves
+    if ( M_w[63:0] == 64'b0 )  begin
+    // we have game over!
+    // maximize the score
+        if ( cnt_score_R >= cnt_score_B ) 
+        begin
+            max_p_d = 15000 + (cnt_score_R - cnt_score_B);
+        end
+        // adversarul
+        else begin
+            // we loose
+            max_p_d = -15000;
+        end
+        sp_d = sp_q - 1;
+        state_d = EXPLORE_FETCH;
+    end
+    else begin
+        // nu e game over
+        state_d = EXPLORE_STORED_0;    
+    end
+...
+\end{verbatim}
+\end{scriptsize}
+\caption{starea GAME\_OVER\_TEST1}
+\label{frag_minmax4}
+\end{fragmentsursa}
+În cazul în care nu e sfârșit de joc, înseamnă că doar un singur jucător are posibilitatea de a muta, iar explorarea continuă în mod normal, cu tranziție în starea \emph{EXPLORE\_STORED\_0}.\\
+În starea finală, \emph{FINISH} se va ajunge în momentul în care am ajuns printr-o revenire la nivelul $0$ în arbore și nu mai avem mutări posibile. Automatul va tranziționa în starea \emph{RESET}, activând semnalul \emph{done} și dezactivând semnalul \emph{thinking}. Din starea \emph{RESET} se va ieși doar dacă primim un impuls \emph{go}, adică se dorește o nouă explorare.
+\subsection{Concluzii}
+Modulul \emph{b\_move} este în exterior, comunicarea cu el se face prin semnalele specificate în descriere. Modulele \emph{moves\_map}, \emph{heuristics}, \emph{RB\_cnt}, \emph{memory\_bram} sunt inferate în interiorul acestui modul. În designul complet, sunt inferate în total două module de tipul \emph{moves\_map}, se putea și cu unul singur, dar nu era necesar, iar resursele ocupate de acestea sunt acceptabile. Fiecare modul va funcționa continuu, având la ieșire un rezultat la fiecare impuls de ceas, în afară de modulul de memorie unde semnalul de scriere, \emph{we}, este activat doar în starea \emph{EXPLORE\_M2} și \emph{EXPLORE\_PASS\_M2}, stările în care se dorește memorarea unei stări din joc $s_{i}$ la care se adaugă informațiile necesare. Se observă acum cât de mult ajută la performanță modulele descrise anterior ca fiind rapide. Pentru un rezultat se așteaptă maxim $1$ impuls de ceas, iar timpul total de explorare este direct influențat de aceste module. În total, modulul \emph{game\_ai} cu toate modulele ce le deține, ocupă $33\%$ din resurse (numărul de \emph{slice-uri}). Numărul de bistabile ocupate, este de $456$, ce reprezintă $4\%$ din total.
+
+\section{Modulul de memorie}
+\label{modul_memory_bram}
+Modulul de memorie este implementat în BRAM (vezi \ref{bram}). Din \cite{xilinx_coding_practices} ne este asigurată o foarte bună performanță a acestuia. Flexibilitatea cu care putem construi acest modul ne ajută foarte mult în designul nostru, practic putem construi orice tip de memorie dorim. Pentru acest algoritm, avem nevoie de o memorie adresabilă prin nivelul arborelui, adică maxim $16$ celule\footnote{Mai mult de $16$, explorarea ar dura prea mult.}. Lungimea datelor este însă de $256$ de biți. Avem practic o memorie $16x256$ cu un singur port.
+\subsection{Descrierea modulului} 
+\subsubsection{Schema bloc}
+\begin{figure}[h]
+\includegraphics*[bb = 0 120mm 200mm 275mm, scale = 0.3]{xilinx_bram.eps}
+\caption{\small{Schema bloc a modulului \emph{memory\_bram}.}}
+\label{fig:xilinx_bram}
+\end{figure}
+
+\subsubsection{Intrări}
+\begin{itemize}
+\item \emph{clk} impulsul de sincronizare, va fi legat la tactul global.
+\item \emph{addr} linia de adrese, pe $4$ biți.
+\item \emph{we} semnalul de scriere în memorie, activ la $1$.
+\item \emph{DIN} datele de intrare, $256$ de biți.
+\end{itemize}
+
+\subsubsection{Ieșiri}
+\begin{itemize}
+\item \emph{DOUT} datele de ieșire, $256$ de biți.
+\end{itemize}
+
+\subsection{Detalii de implementare}
+Memoria este construită pentru a scrie în ea, sincron cu semnalul \emph{clk}. Citirea se va face tot sincron.
+\begin{fragmentsursa}
+\begin{scriptsize}
+\begin{verbatim}
+
+always @(posedge clk) begin
+    if ( we ) begin
+        bram[addr] <= DIN;
+    end
+
+    read_addr <= addr;	 
+end
+	 
+assign DOUT = bram[read_addr];
+\end{verbatim}
+\end{scriptsize}
+\caption{Memoria}
+\label{frag_bram}
+\end{fragmentsursa}
+La fiecare front crescător a semnalului \emph{clk}, dacă semnalul de scriere \emph{we} este găsit activ, atunci se va scrie în memorie datele de la intrare, reprezentate prin \emph{DIN}. Se va memora într-un registru intern adresa la care se face scrierea sau se accesează memoria.\\
+În final citirea se face sincron, asignare continua, folosind registrul intern în care s-a memorat adresa. Asta va însemna că rezultatele de la ieșire le vom avea cu o mică întârziere, dată de bascularea bistabilelor ce compun registrul \emph{read\_addr}.
+
+\subsubsection{Reprezentarea datelor}
+\begin{figure}[h]
+\includegraphics*[scale = 0.4]{memorie.eps}
+\caption{\small{Reprezentarea datelor în memorie}}
+\label{fig:dia_mem}
+\end{figure}
+
+Cam așa arată reprezentarea datelor în memorie (vezi \ref{fig:dia_mem}. Valorile \emph{alfa, beta, best} sunt reprezentate pe $20$ biți ($19 + 1$ bit de semn). Urmează valorile ce definesc tabla de joc, matricile \emph{M, B, R} fiecare pe câte $64$ de biți. Urmează apoi $1$ bit ce reprezintă dacă nodul respectiv e explorat prima dată sau nu. Biții rămași sunt rezervați.
+
+\subsection{Concluzii}
+Acest modul este de fapt o descriere \emph{macro} a unei memorii. Programul de sintetizare va recunoaște formatul și intern va folosi memoria \emph{BRAM}, nu va infera $16$x$256$ bistabile. Totuși, dacă se dorește, se poate forța acest lucru. O astfel de memorie sintetizată cu bistabile, ar ocupa $77\%$ din resurse! Mai mult decât intreg jocul Reversi implementat. Instruind programul de sinteză să folosească memoria BRAM, această memorie va ocupa $40\%$ din capacitatea totală a BRAM-ului de pe această placă.
+
+\section{Numărarea discurilor}
+\label{modul_RB_cnt}
+În contrucția algoritmului, este nevoie pentru diferite stări de joc de a computa scorul. La jocul Reversi, scorul însemnând câte discuri are fiecare jucător. Este greu de estimat pentru câte noduri din arbore va fi nevoie de a calcula scorul, dar făcând parte din algoritmul de explorare voi propune o computație rapidă, într-un ciclu de ceas. Această nevoie, de a calcula scorul, apare atunci când un nod din arbore este un nod terminal iar algoritmul trebuie să decidă cine a câștigat. În cazul în care a câștigat adversarul, minmax va evita acea stare. Computația scorului, constă în numărarea de discuri din fiecare matrice \emph{R, B}. Procesul este complet paralel, fiind matrici diferite. Bineînțeles, paralelizarea se poate face și la nivel de matrice.
+\subsection{Descrierea modulului}
+\subsubsection{Schema bloc}
+\begin{figure}[h]
+\includegraphics*[bb = 0 120mm 200mm 275mm, scale = 0.3]{xilinx_RB_cnt.eps}
+\caption{\small{Schema bloc a modulului \emph{RB\_cnt}.}}
+\label{fig:xilinx_rbcnt}
+\end{figure}
+
+
+\subsubsection{Intrări}
+\begin{itemize}
+\item \emph{clk} impulsul de sincronizare, va fi legat la tactul global.
+\item \emph{RST} linia de reset, va fi legată la resetul global.
+\item \emph{R} $64$ biți, reprezintă matricea $R$.
+\item \emph{B} $64$ biți, reprezintă matricea $B$. 
+\end{itemize}
+
+\subsubsection{Ieșiri}
+\begin{itemize}
+\item \emph{cntR} $7$ biți, reprezintă scorul pentru jucătorul $R$ (maxim $64$).
+\item \emph{cntB} $7$ biți, reprezintă scorul pentru jucătorul $B$ (maxim $64$).
+\end{itemize}
+
+\subsection{Detalii de implementare}
+Modulul este format dintr-un proces sincron cu semnalul \emph{clk} și un proces asincron. În procesul asincron se calculează suma fiecărui element din fiecare matrice, iar procesul sincron va memora în registrii rezultatul la fiecare front crescător al semnalului \emph{clk}.
+\subsubsection{Metoda naivă}
+O metodă naivă constă în adunarea tuturor poziților din matrice formând un lanț.\footnote{În engl. chain adder.}  Programatic, acest lucru s-ar face adunând fiecare bit într-un ciclu repetitiv. Hardware, prin aplicarea metodei ar rezulta tot un rezultat la fiecare ciclu de ceas, problema ar apărea la creșterea frecvenței, pentru că cel mai semnificativ bit va apărea după o întârziere mare, dată de întregul lanț de sumatoare, complexitatea fiind $O(n)$.
+\subsubsection{Metoda paralelă}
+Metoda paralelă este o implementare hardware a algoritmului descris de Knuth în lucrarea sa „Art of Computer Programming”, secțiunea „Bitwise tricks and techniques” \cite{knuth}. Algoritmul constă în a calcula pe rând sume de biți $(u_{2j+1}, u_{2j})$, rezultat care va forma un număr în baza $4$ unde fiecare termen reprezintă suma a câtor $2$ biți de la intrare. Calculul se repetă până când se ajunge la un singur număr care reprezintă suma biților intrării $u$. Hardware, putem considera o adunare arborescentă. La nivelul cel mai sus, însumăm câte $2$ biți, iar la nivelul următor câte $4$ biți și tot așa până la rădăcina arborelui care va face ultima însumare. Spre deosebire de varianta naivă aici complexitatea ar fi doar $log_{2}(n)$, pentru că întârzierea este dată de numărul de niveluri în arbore.\\
+În această lucrare, eu am combinat cele două variante, motivul ar fi economisirea de resurse. Se va face o adunare în lanț pentru fiecare linie din matrice, după care rezultatul celor $8$ linii se vor aduna din nou într-un lanț.
+\begin{fragmentsursa}
+\begin{scriptsize}
+\begin{verbatim}
+
+...
+cntB_p00_d = B[00] + B[01] + B[02] + B[03] + B[04] + B[05] + B[06] + B[07];
+cntB_p01_d = B[08] + B[09] + B[10] + B[11] + B[12] + B[13] + B[14] + B[15];	
+cntB_p02_d = B[16] + B[17] + B[18] + B[19] + B[20] + B[21] + B[22] + B[23];
+cntB_p03_d = B[24] + B[25] + B[26] + B[27] + B[28] + B[29] + B[30] + B[31];
+cntB_p04_d = B[32] + B[33] + B[34] + B[35] + B[36] + B[37] + B[38] + B[39];
+cntB_p05_d = B[40] + B[41] + B[42] + B[43] + B[44] + B[45] + B[46] + B[47];
+cntB_p06_d = B[48] + B[49] + B[50] + B[51] + B[52] + B[53] + B[54] + B[55];
+cntB_p07_d = B[56] + B[57] + B[58] + B[59] + B[60] + B[61] + B[62] + B[63];
+...
+\end{verbatim}
+\end{scriptsize}
+\caption{Adunarea în lanț a fiecărei linii.}
+\label{frag_cnt1}
+\end{fragmentsursa}
+
+\subsection{Concluzii}
+Nu prea sunt multe de spus la acest modul, o întrebare interesantă ar fi... „Cum se poate face și mai rapid?". Nu am studiat încă bine problema, dar estimez că o variantă mai bună ar fi și folosirea arborilor \emph{Wallace}\footnote{Arborii Wallace sunt folosiți la adunarea produselor parțiale la înmulțire.}, teoria lor poate fi găsită în \cite{cormen} \cite{hwang}. Procesoarele moderne Intel, conțin în setul de instrucțiuni SSE4 instrucțiuni specifice pentru a calcula numărul de biți într-un număr \cite{intel_sse4}, operația fiind foarte folosită în multe domenii deoarece cel mai simplu o mulțime se reprezintă printr-un șir de biți, iar cardinalul mulțimii înseamnă de fapt problema de față. Putem formula problema existentă în Reversi în felul următor: „Să se afle $|R|$ și $|B|$ unde R,B sunt mulțimi formate din elementele $r_{i}$ și $b_{i}$ care reprezintă discurile pentru fiecare jucător aflate pe poziția $i$.” Fiind vorba de Reversi, avem: dacă $r_{i} \in R \Leftrightarrow b_{i} \notin B$.
+
+\section{Euristica}
+\label{modul_heuristics}
+Multe jocuri din lumea noastră precum șah, Go, Reversi dispun de conceptul de evaluare a poziției de joc. În fiecare stare de joc se va putea apreacia cât este de favorabilă pentru fiecare dintre jucători. Acest modul presupune generarea unui scor pentru o anumită stare a jocului. Nu s-a pus accent pe generarea unei funcții de evaluare competitivă, totuși, rezultatele obținute sunt destul de bune.\\
+Funcția de evaluare este foarte dependentăde joc. Rezultatul unui program de Reversi este direct determinat de această funcție, ea înlocuind incapacitatea programelor de a explora complet arborele de joc. Jocul nefiind rezolvat, nu este cunoscută această funcție încât jucătorul să joace perfect. În general, aceste funcții sunt mai mult empirice decât determinate științific, fiecare constând într-o serie de parametrii și de observații. Cercetarea în acest domeniu a variat, de la algoritmi statici la algoritmi dinamici, unde ponderile se schimbă pe parcursul jocului \cite{buro}, la rețele neuronale, programare genetică sau învățare\cite{buro_learning}. Un alt concept, nelipsit din programele de Reversi profesionale, este \emph{cartea de deschidere}\footnote{În engl. opening-book.}\cite{buro_opening}. Cartea de deschidere presupune o bază de date imensă cu de diferite stări de joc, din începutul jocului. După o partidă jucată, se poate determina retro dacă o mutare de la început a fost una bună sau nu. O astfel de bază de date conține sute de mii de combinații.\\
+Acesta este modulul care implementează funcția $u_{s_{i}}$ și vom avea nevoie de un rezultat la fiecare nod terminal al arborelui. Pentru acest lucru, este evident că va trebui proiectat încât să furnizeze un rezultat suficient de repede. Este ultimul modul critic prezentat, în care mi-am propus ca un rezultat să poată fi furnizat la fiecare impuls de tact. Algoritmul este bazat pe favorizarea discurilor stabile, care vor contribui direct la scor și mobilitatea, un aspect foarte important în Reversi. Implementarea este statică, fără parametrii ajustabili și gândită astfel încât să poată fi hardware foarte ușor de implementat. Generarea unui scor pe structurile stabile a fost inspirată din lucrările lui Michael Buro \cite{buro}, el obținând rezultate foarte bune, dar cu modele mult mai sofisticate decât cele prezentate aici.
+
+\subsection{Descrierea modulului}
+\subsubsection{Denumire}
+\emph{heuristics}
+
+\subsubsection{Schema bloc}
+\begin{figure}[h]
+\includegraphics*[bb = 0 100mm 200mm 275mm, scale = 0.3]{xilinx_heur.eps}
+\caption{\small{Schema bloc a modulului \emph{heuristics}.}}
+\label{fig:xilinx_heuristics}
+\end{figure}
+
+
+\subsubsection{Intrări}
+\begin{itemize}
+\item \emph{clk} impulsul de sincronizare, va fi legat la tactul global.
+\item \emph{RST} linia de reset, va fi legată la resetul global.
+\item \emph{R} $64$ biți, reprezintă matricea $R$.
+\item \emph{B} $64$ biți, reprezintă matricea $B$. 
+\item \emph{M} $64$ biți, reprezintă matricea $M$ pentru jucătorul curent aflat în starea terminală. 
+\end{itemize}
+
+\subsubsection{Ieșiri}
+\begin{itemize}
+\item \emph{value} $20$ biți, reprezintă scorul atribuit stării formată din intrările (R, B). Numărul este cu semn.
+\end{itemize}
+
+\subsection{Detalii de implementare}
+Un singur lucru este cert la o stare de joc din Reversi: discurile stabile vor contribui direct la scor. Și această euristică își propune acest lucru, de a favoriza construcția de discuri stabile. Reprezentarea foarte bună a tablei ne permite o potrivire de șabloane\footnote{În engl. patterns.} extrem de rapidă. O singură potrivire este de fapt doar o operație \emph{AND} între starea jocului și șablon, care este reprezentat tot pe $64$ de biți pentru a face posibilă această comparare rapidă. Putem exprima astfel: 
+\begin{equation}
+\label{sablon1}
+s^{R}_{i} \land w_{0} = w_{0} \qquad{} \text{dacă tabla de joc conține șablonul $w_{0}$.}
+\end{equation}
+În \eqref{sablon1} $s^{R}_{i}$ reprezintă componenta \emph{R} a stării $s_{0}$.
+
+În \ref{fig:sablon1} se pot vedea $6$ din cele $48$ de șabloane implementate. Bineînțeles, un șablon poate eclipsa un alt șablon (adică îl va conține), dar acest lucru nu e neaparat de evitat pentru că scoate în evidență importanța unor discuri.
+\begin{figure}[h]
+\begin{center}
+\includegraphics*[scale = 0.2]{pattern00.eps}
+\caption{\small{Exemple de șabloane: discuri stabile.}}
+\label{fig:sablon1}
+\end{center}
+\end{figure}
+Pentru fiecare șablon se acordă un scor prestabilit. Dacă un anume șablon este conținut de către matricea B, adică de adversar, atunci se va acorda același scor, dar negativ. În acest fel algoritmul de explorare va face tot posibilul să evite mutările unde adversarul ar avea multe discuri stabile.
+
+\begin{equation}
+\label{eq_heur}
+u_{0} = \sum_{i=0}^{n} x_{i}\\
+x_{i} = \left\{
+\begin{array}{rl}
+h_{i}      & \text{dacă } s_{0}^R \land w_{i} = w_{i}\\
+-h_{i}     & \text{dacă } s_{0}^B \land w_{i} = w_{i}
+\end{array} \right.
+\end{equation}
+
+În \eqref{eq_heur} $h_{i}$ reprezintă ponderea asociată tiparului $i$. Metoda este ușor de implementat în hardware și este ușor de paralelizat.
+\subsubsection{Calcularea $x_{i}$}
+Vom calcula toate scorurile $x_{i}$ în paralel. Abordarea este în felul următor: Pentru fiecare șablon avem $h_{i}$ dacă șablon este înclus în R, altfel avem $0$ iar în același timp avem $-h_{i}$ dacă este inclus în B, sau $0$ altfel. Bineînțeles, nu putem avea pentru aceași stare de joc $h_{i}$ și $-h_{i}$. În final urmează să adunăm toate aceste scoruri în număr de $2\cdot 48$.
+
+\begin{fragmentsursa}
+\begin{scriptsize}
+\begin{verbatim}
+
+...
+assign pattern06_Rd = ((R[63:0] & 64'h000103070F1F3F7F) == 64'h000103070F1F3F7F) ?  7 : 0;
+assign pattern06_Bd = ((B[63:0] & 64'h000103070F1F3F7F) == 64'h000103070F1F3F7F) ? -7 : 0;
+assign pattern07_Rd = ((R[63:0] & 64'h0103070F1F3F7FFF) == 64'h0103070F1F3F7FFF) ?  8 : 0;
+assign pattern07_Bd = ((B[63:0] & 64'h0103070F1F3F7FFF) == 64'h0103070F1F3F7FFF) ? -8 : 0;
+...
+\end{verbatim}
+\end{scriptsize}
+\caption{Exemplu de potrivire de șabloane.}
+\label{frag_sablon1}
+\end{fragmentsursa}
+
+Avantajul extraordinar față de o variantă software, este calcularea în paralel a tuturor tiparelor. Circuistica generată va conține foarte multe porți \emph{AND}, iar apoi scorurile generate $x_{i}$ vor intra în sumatoare pentru a fi adunate.
+
+\subsubsection{Însumarea scorurilor}
+Ca și cum am spus în \ref{modul_RB_cnt}, o soluție naivă ar consta într-o adunare în lanț a valorilor. Algoritmul având o complexitate $O(n)$ ar fi prea lent, constrângerile de timp nefiind satisfăcute. Metoda arborescentă, care construită într-un mod corect are o complexitate de $log_{2}(n)$ va da rezultate mult mai bune \cite{cormen} \cite{hwang}.\\
+În această lucrare am combinat cele două metode rezumându-mă la un sumator în lanț cu $4$ termeni. Întârzierea va fi deci $4 \cdot t_A$ pentru fiecare nivel din arbore.
+
+\begin{fragmentsursa}
+\begin{scriptsize}
+\begin{verbatim}
+
+...
+value_Rp0_d = pattern00_Rd + pattern01_Rd + pattern02_Rd + pattern03_Rd; 
+value_Rp1_d = pattern04_Rd + pattern05_Rd + pattern06_Rd + pattern07_Rd; 
+value_Rp2_d = pattern08_Rd + pattern09_Rd + pattern10_Rd + pattern11_Rd; 
+value_Rp3_d = pattern12_Rd + pattern13_Rd + pattern14_Rd + pattern15_Rd; 
+...
+\end{verbatim}
+\end{scriptsize}
+\caption{Exemplu de adunare în paralel a scorurilor.}
+\label{frag_sablon2}
+\end{fragmentsursa}
+
+La scorul final, se va adăuga și numărul de mutări valide. Acest număr se obține exact ca la numărarea scorului (vezi \ref{modul_RB_cnt}) doar că operația se face asupra matricei $M$. Scorul final considerat este de forma:
+\begin{equation}
+scor = p_{1} \cdot stabilitate + p_{2} \cdot mutabilitate
+\end{equation}
+\emph{Mutabilitatea} reprezintă numărul de mutări posibile pentru jucătorul curent. Valorile $p_{1}$ și $p_{2}$ sunt determinate empiric, momentan ele fiind puteri ale lui $2$, pentru un calcul rapid, timp $0$ practic, în hardware.
+\subsection{Concluzii}
+Am prezentat o funcție de evaluare simplă și destul de eficientă, dar cel mai important pentru scopul lucrării, foarte rapidă. Bineînțeles, se poate îmbunătăți și această reprezentare, de exemplu la adunarea scorurilor prin folosirea unor algoritmi rapizi de \emph{multi-operand adders} \cite{hwang}, sau prin folosirea arborilor Wallace  \cite{cormen} \cite{hwang}. Arborii Wallace se bazează pe observația că: dacă adunarea a două numere $x + y$ necesită un timp $O(n)$, atunci adunarea a $3$ numere $x + y + z$ va necesita în plus doar un timp constant \cite{cormen}. Astfel, trei termeni ce necesită adunați îi putem transforma în problema adunării a $2$ termeni, tot așa până la un număr de $2$ termeni pe care să-i adunăm cu un sumator complet.\\
+Dezavantajul implementării în hardware a funcțiilor euristice, este că se pierde mult din flexibilitate. Pe un procesor general, se vor putea implementa algoritmi mult mai flexibili, precum cei bazați pe învățare.
+
+\section{Închegarea modulelor}
+A mai rămas un singur modul de descris, cel principal. Acest modul este motorul ce va face ca întreg sistemul să funcționeze, el va permite și jocul cu un jucător uman. Nu este nimic critic în acest modul, contează doar funcționalitatea lui. Pot spune că modulul este „arbitrul” jocului, el va da startul modulului de AI, va aștepta după el, după care va lua mutarea calculată și va face schimbarea pe tablă, după care va lăsa jucătorul uman să facă mutarea, va trimite datele pe interfața serială și tot așa. Totul este implementat sub forma unui automat finit.
+
+
+\subsection{Descrierea modulului}
+\subsubsection{Denumire}
+\emph{reversi}
+
+\subsubsection{Dependințe}
+Modulul \emph{b\_move} (vezi \ref{bmove_combinational}).\\
+Modulul \emph{moves\_map} (vezi \ref{modul_moves_map}).\\
+Modulul \emph{game\_ai} (vezi \ref{modul_game_ai}).\\
+Modulul \emph{xy\_calculate} (vezi \ref{mini_klavier}).\\
+Modulul \emph{time\_analysis} (vezi \ref{modul_ta}).\\
+Modulul \emph{vga\_controller} (vezi \ref{vga_ctrl}).\\
+
+
+
+\subsubsection{Schema bloc}
+\begin{figure}[h]
+\includegraphics*[bb = 0 0mm 200mm 275mm, scale = 0.3]{xilinx_reversi.eps}
+\caption{\small{Schema bloc a modulului principal.}}
+\label{fig:xilinx_top}
+\end{figure}
+
+
+\subsubsection{Intrări}
+\begin{itemize}
+\item \emph{clk} impulsul de sincronizare, va fi legat la tactul global.
+\item \emph{RST} linia de reset, va fi legată la resetul global.
+\item \emph{east} linia ce este legată în exeterior la butonul pentru o deplasare spre dreapta. (vezi \ref{mini_klavier})
+\item \emph{west} linia ce este legată în exeterior la butonul pentru o deplasare spre stânga. (vezi \ref{mini_klavier})
+\item \emph{north} linia ce este legată în exeterior la butonul pentru o deplasare în sus. (vezi \ref{mini_klavier})
+\item \emph{south} linia ce este legată în exeterior la butonul pentru o deplasare în jos. (vezi \ref{mini_klavier})
+\item \emph{knob} linia ce este legată în exeterior la butonul pentru poziționarea discului. (vezi \ref{mini_klavier})
+
+\end{itemize}
+
+\subsubsection{Ieșiri}
+\begin{itemize}
+\item \emph{gameover\_led} semnal ce va fi conectat la un led de pe placă, printr-o rezistență de $390\Omega$. Aprinderea ledulul semnifică sfârșitul unui joc. 
+
+\item \emph{pass\_led} semnal ce va fi conectat la un led de pe placă, printr-o rezistență de $390\Omega$. Aprinderea ledulul semnifică faptul că jucătorul uman nu are mutări posibile și va muta din nou adversarul.
+
+\item \emph{thinking\_led} semnal ce va fi conectat la un led de pe placă, printr-o rezistență de $390\Omega$. Aprinderea ledulul semnifică faptul că modullul \emph{game\_ai} încă explorează.
+
+\item \emph{TxD} va fi conectat la pinul Tx la portul serial de pe placă.
+
+\item \emph{vga\_h\_sync} reprezintă impulsul de sincronizare orizontală, va fi conectat la portul VGA.
+\item \emph{vga\_v\_sync} reprezintă impulsul de sincronizare verticală, va fi conectat la portul VGA.
+
+\item \emph{vga\_R} componenta R a controler-ului VGA.
+\item \emph{vga\_B} componenta B a controler-ului VGA.
+\item \emph{vga\_G} componenta G a controler-ului VGA.
+
+\end{itemize}
+
+\subsection{Detalii de implementare}
+
+Logica jocului este reprezentată printr-un automat finit. La inițializare, adică în momentul în care linia \emph{RST} este activă, tabla de joc va avea poziția standard \cite{othello_fang}, adică două discuri roșii și două albastre, în centru.
+\subsubsection{Automatul finit}
+\begin{figure}[h]
+\includegraphics*[scale = 0.4]{graf_reversi.eps}
+\caption{\small{Automatul finit ce reprezintă logica de joc. Alternarea dintre mutările omului și a jucătorului artificial.}}
+\label{fig:fig_aut2}
+\end{figure}
+Imediat după reset, jocul începe în starea \emph{HUMAN}, automatul va rămâne în această stare până când omul va dori poziționarea unui disc și va apăsa butonul pentru poziționare. Dacă poziția selectată de om, este validă (adică există în harta de mutări calculată), atunci se va reține în registre coordonata \emph{X} și \emph{Y} selectată și se va trece în starea \emph{HUMAN\_MOVE}.\\
+Starea \emph{HUMAN\_MOVE} are rolul doar de a aștepta ca la intrarea modulului \emph{b\_move} coordonatele memorate în starea anterioară să fie stabile. Se va tranziționa în starea \emph{HUMAN\_MOVE\_WAIT}. În această stare avem calculată noua stare de joc în care jucătorul uman a făcut mutarea. Se pune rezultatul în registrele ce reprezintă tabla de joc care e vizualizată pe ecran, se complementează jucătorul curent pentru că urmează ca adversarul să facă o mutare și se trece în starea \emph{START\_AI}. Se folosește o singură instanță a modulului \emph{b\_move}, iar printr-un multiplexor, în această stare el va fi conecta la modulul \emph{game\_ai}. Partajarea acestei resurse este ușoară, pentru că știm că nu se poate ca evenimentele să apară simultan, iar un simplu multiplexor la intrările și ieșirile modulului \emph{b\_move}, care va fi conectat când la AI, când la tabla vizibilă pe ecran, este suficient. Având toate intrările pregătite pentru modulul \emph{game\_ai}, registrul în care memorăm timpul de explorare este resetat, se va tranziționa în starea \emph{AI}.\\
+În starea \emph{AI}, modulul \emph{game\_ai} a început explorarea, în cazul în care nu are mutări posibile, acest lucru va fi semnalat prin linia \emph{pass}, și se va tranziționa în starea \emph{RS232\_0}. În cazul în care semnalul \emph{done} devine activ, atunci modulul a terminat de explorat și automatul va tranziționa în starea \emph{MOVE\_BEST\_WAIT}. Dacă explorarea continuă, atunci automatul rămâne în starea \emph{AI} iar numărătorul în care memorăm timpul de gândire, se va incrementa.\\
+În starea \emph{MOVE\_BEST\_WAIT} automatul va tranziționa în \emph{MOVE\_BEST}, iar modulul \emph{b\_move} fiind deja „deconectat” de la modulul \emph{game\_ai}, are intrările pregătite pentru a face vizibilă mutarea AI-ului.\\
+În starea \emph{MOVE\_BEST} se vor actualiza registrele ce reprezintă tabla de joc cu ieșirile de la modulul \emph{b\_move}, după care se va tranziționa în starea \emph{RS232\_0} pentru a trimite timpii de gândire pe interfața serială. Tot aici, se complementează jucătorul, pentru că va urma jucătorul uman la rând.\\
+În starea \emph{RS232\_0} semnalul de start pentru modulul RS232 devine activ, după care tranziționăm în starea \emph{RS232\_1}. În \emph{RS232\_1} se va verifica starea semnalului \emph{TxD\_busy}, iar dacă este $1$, atunci rămânem în aceași stare. Dacă transmisia serială s-a terminat, adică \emph{TxD\_busy} este $0$, atunci tranziționăm în starea \emph{HUMAN}, după care se va repeta.\\
+Semnalul \emph{pass} este calculat simplu, este comparată matricea $M$ cu 0. Sfârșitul jocului va fi atunci când vor fi active semnalele \emph{pass} și \emph{ai\_pass}.
+
+\subsection{Concluzii}
+Versiunea existentă poate avea mici modificări față de ce e descris aici, pentru că pe parcurs s-a dorit transmiterea la un calculator a mai multor informații pentru depanare sau statistică, de exemplu: numărul de noduri evaluate, valoarea minmax, etc.
+
+\subsection{Testarea modulelor}
+\label{testare}
+Testarea modulelor s-a făcut folosind programele ISim și ModelSim. ISim s-a dovedit folositor pentru modulele mai mici, iar la modulele mari a fost imposibil de folosit. Modulele simulate cu ISim au fost simulate comportamental dar s-a simulat și \emph{post-route}. A fost creat pentru fiecare modul, un modul de test corespunzător, cu anumite cazuri de test construite de autor. Cu ModelSim s-a reușit simularea în întregime, și a modulului de top, adică închegarea tuturor modulelor. S-au descoperit unele erori de proiectare în modulul \emph{game\_ai} și datorită testării, au fost identificate și rezolvate.
+
+\chapter{Rezultate}
+Mașina contruită a fost testată dacă e capabilă de un joc corect, cu ajutorul altor programe. Primul ar fi cel contruit de către mine, programul cu care urmează să compar mașina rezultată. Este vorba de un program scris pe platforma .NET iar testele au fost făcute pe un sistem de operare Windows, pe un calculator cu procesor Pentrium IV ce rulează la o frecvență de 3GHz și 1.5GB memorie RAM. Mașina proiectată a fost testată și cu alte programe și s-a dovedit a fi capabilă de un joc corect, lucru rezultat și din testarea modulelor (vezi \ref{testare}). Programele cu care s-a mai testat au fost: Zebra, Saio, Pocket PC Reversi, Microsoft Reversi. S-a testat și cu jucători umani într-o serie relativ mare de partide (eu estimez pe la 200-300 de partide). Prin urmare, consider mașina capabilă de un joc corect, respectând regulile jocului fără defecțiuni vizibile momentan.\\
+\subsubsection{Comparația cu versiunea pe PC}
+Scopul imediat al acestei lucrări a fost de a obține un plus de performanță față de varianta jocului programată pe un PC, tot de către autor. Rezultatele s-au obținut după mai multe partide de joc, la diferite adâncimi de explorare, iar în final pentru reprezentare s-a ales adâncimea $6$. Această adâncime a fost aleasă pentru că mai mult de atât, varianta pe PC nu ar fi făcut o mutare într-un timp rezonabil.
+\begin{figure}[h]
+\begin{center}
+\includegraphics*[scale = 0.4]{statistics_pc_fpga_d6.eps}
+\end{center}
+\caption{\small{FPGA vs PC, reprezentare pe scară logaritmică.}}
+\label{fig:statistics_00}
+\end{figure}
+Graficul (\ref{fig:statistics_00}) reprezintă un joc între mine și construită și programul pe PC. Răspunsurile circuitului din FPGA și al programului pe PC vor fi identice, pentru că a fost implementați exact aceași algoritmi, aceași adâncime de explorare și aceași euristică, prin urmare, graficul are sens. Tot ce este diferit între implementarea pe PC și FPGA, este timpul de răspuns pentru fiecare mutare. Se observă că diferența este foarte mare, în favoarea implementării în FPGA, chiar mai mare decât se aștepta autorul. Reprezentarea este pe o scară logaritmică pentru că diferențele foarte mari dintre valori nu ar face vizibile concluziile. Făcând mai multe teste, s-a calculat un factor de accelerare de aproximativ $250$ de ori pentru implementarea în FPGA. Accelerare aici înseamnă efectiv de câte ori este mai rapidă o implementare decât alta. Această testare trebuie luată ca fiind orientativă, și interpretat exact rezultatul final, adică: implementarea FPGA este mai rapidă ca implementarea curentă pe PC, pentru că testarea este influențată și de încărcarea sistemului de operare și de mulți alți factori. Platforma .NET este de fapt o mașină virtuală, care iar încetinește mult aplicația.\\
+
+\subsubsection{Comparația cu alte programe}
+În graficul (\ref{fig:statistics_01}) avem reprezentat numărul de noduri evaluate pentru fiecare mutare în timpul unei partide de joc cu programul Zebra. \\
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics*[scale = 0.4]{statistica_fpga_noduri_d10.eps}
+\end{center}
+\caption{\small{Numărul de noduri evaluate la fiecare mutare pentru o partidă de joc. (FPGA)}}
+\label{fig:statistics_01}
+\end{figure}
+
+După ambele două grafice se pot distinge destul de clar fazele de joc. Se observă că în faza de mijloc a jocului, factorul ramificare a arborelui este cel mai mare, pentru că sunt un număr mare de mutări posibile. Spre faza de sfârșit, factorul descrește semnificativ, și numărul de noduri analizate este mai mic și timpii de evaluare sunt mai mici. Prin această observație am putea determina de la ce mutare este fiabilă o căutare \emph{full} până la sfârșitul jocului. În cazul de față, se pare că o adâncime în arbore de $16$ niveluri în faza de sfârșit, ar duce la o determinare a valorii minmax finale în resurse de timp rezonabile.\\
+După mai multe teste, s-a calculat că mașina poate evalua aproximativ $5$ milioane de noduri/secundă. Programul Zebra poate evalua între 1.5-2M noduri/secundă în faza de mijloc a jocului (conform autorului Gunnar Andersson), ceea ce înseamnă că circuitul implementat poate evalua de aproximativ $3$ ori mai multe noduri decât Zebra. Programul Zebra este probabil cel mai rapid program de Othello implementat pe PC. Pentru calcule interne, acesta folosește instrucțiuni SIMD din setul MMX de la Intel pentru optimizare. Totuși, aceste rezultate oarecum în favoarea implementării mele, nu trebuie nicidecum considerate că această implementare este competitivă cu programul Zebra care are o euristică excepțională, cu valori calculate și cântărite după mii de partide de joc. Mai mult decât atât, Zebra are implementați diferiți algoritmi de căutare selectivă (vezi \ref{cautare_selectiva}) ceea ce în final îl face mai rapid și mai bun decât implementarea mea. De aceea testul cu Zebra nu este relevant, este doar orientativ.
+
+\chapter{Concluzii}
+Este minunat cum tehnologia de azi ne permite să contruim anumite mașini, care acum $50$ de ani erau gânduri puse pe hârtie a unor oamenii de știință precum Neumann, Turing, Shannon.\\
+O proiectare hardware pentru o anumită aplicație deschide noi orizonturi, gândirea este complet diferită față de o gândire secvențială în momentul în care programăm o mașină obișnuită. Am încercat să arăt o posibilă implementare a joclui Othello pe un FPGA, rezultatele fiind optimiste aș zice, s-ar putea construi o astfel de mașină care să ducă la un joc extrem de rapid și de competitiv. Problema rezolvată este o problemă de căutare în spațiul stărilor, care poate avea o mulțime de aplicații, nu doar acest joc, iar un design hardware s-ar putea să fie o metodă de rezolvare mult mai rapidă și în final chiar mai flexibilă datorită paralelizării, decât programarea unui calculator obișnuit.\\
+A fost nevoie de Deep Blue, un adevărat monstru tehnologic, pentru a putea concura cu un campion mondial la Șah. Deep Blue avea o putere de analiză de 200M noduri/secundă. Impresionant, ... impresionant creierul uman care poate face față la o astfel de mașinărie. În $50$ de ani, după cum am spus, s-a ajuns unde alții nici nu își imaginau și totuși, suntem foarte departe de adevăr, încât încercăm să copleșim mintea omului doar prin generarea tuturor combinațiilor posibile și prin selectarea unui subset pe baza unei euristici. Mintea omului este capabilă de o astfel de selecție inimaginabilă, campionul de șah nu va gândi $n$ mutări înainte, va avea altfel structurată informația în creier, strategiile și mutările bune fiind în atenția lui. Othello nu a fost rezolvat decât pe o tablă 6x6, jocul de Șah a fost rezolvat decât pe o tablă 3x3 și fazele de final cu oricare 6 piese pe o tablă 8x8. Jocul Go este intangibil din punctul de vedere al mașinilor. Cel mai bun calculator la Go pierde în fața unui jucător novice.\cite{games_solved_herik} Este puțin probabil găsirea unui algoritm ce să funcționeze în timp rezonabil pentru rezolvarea jocurilor, acestea făcând parte din clasa de probleme NP.\\
+Care ar fi scopul rezolvării jocurilor? Fiecare joc crează o nouă lume, cu un spațiu enorm de stări. Lumea este creată de regulile jocului. Un joc rezolvat este o mică lume rezolvată. Adevăratul sens apare după rezolvare, când pe baza rezultatelor obținute se pot observa foarte multe lucruri \cite{games_solved_herik}. Scopul calculatoarelor ar putea fi de a reuși să transpună aceste rezultate obținute în reguli care mai apoi să fie asimilate de creierul uman. De exemplu, pentru jocul „X și 0”, oricine poate dezvolta foarte rapid o strategie pentru a avea cel puțin remiză. Acest lucru se întâmplă pentru că jocul este rezolvat, este cunoscut. Dacă mintea umană ar putea asimila un set mult mai mare de reguli, am putea dezvolta o astfel de strategie pentru jocuri/situații mai complicate, care ne-ar lărgi apoi orizontul cunoașterii, am fi capabili de a aborda probleme și mai complicate.
+
+
+\listof{fragmentsursa}{Lista fragmentelor}
+\listoffigures{}
+
+\bibliographystyle{ieeetr}
+\bibliography{capitol_teoria_jocurilor}
+\end{document}

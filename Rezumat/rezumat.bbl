@@ -1,0 +1,73 @@
+\begin{thebibliography}{10}
+
+\bibitem{Shoham}
+K.~L.-B. Yoav~Shoham, {\em MULTIAGENT SYSTEMS: Algorithmic, Game-Theoretic, and
+  Logical Foundations}.
+
+\bibitem{Allis}
+L.~V. Allis, {\em Searching for Solutions in Games and Artificial
+  Intelligence}.
+\newblock PhD thesis, 1994.
+
+\bibitem{Shannon}
+C.~Shannon, ``Programming a computer for playing chess,'' in {\em Philosophical
+  Magazine}.
+
+\bibitem{Brian}
+B.~Rose, {\em Othello: A minute to learn... A lifetime to master.}
+\newblock 2005.
+
+\bibitem{Herik}
+J.~v.~R. H.~Jaap van~den Herik, Jos W.H.M.~Uiterwijk, ``Games solved: Now and
+  in the future,'' 2002.
+
+\bibitem{Buro2}
+M.~Buro, ``The evolution of strong othello programs,'' tech. rep., NEC Research
+  Institute.
+
+\bibitem{Fang}
+R.~Fang, {\em Othello: From Beginner to Master}.
+\newblock 2003.
+
+\bibitem{Buro3}
+M.~Buro, ``An effective selective extension of the $\alpha - \beta$
+  algorithm,'' tech. rep.
+
+\bibitem{Giumale}
+C.~A. Giumale, {\em Introducere în Analiza Algoritmilor}.
+\newblock POLIROM, 2004.
+
+\bibitem{Behrooz}
+B.~Parhami, {\em Introduction to Parallel Processing}.
+\newblock 2002.
+
+\bibitem{Jean}
+J.-P. Deschamps, {\em Synthesis of Arithmetic Circuits}.
+\newblock 2006.
+
+\bibitem{Buro}
+M.~Buro, ``Experiments with multi-probecut and a new high-quality evaluation
+  function for othello,'' tech. rep., NEC Research Institute.
+
+\bibitem{Cormen}
+T.~H. Cormen, C.~E. Leiserson, and R.~L. Rivest, {\em Introduction to
+  Algorithms}.
+\newblock MIT Press and McGraw-Hill, 2001.
+
+\bibitem{Enoch}
+E.~Hwang, {\em Principles of Digital Logic Design}.
+\newblock 2003.
+
+\bibitem{Vojin}
+P.~V.~G. Oklobdzija, {\em High-Speed VLSI Arithmetic Units: Adders and
+  Multipliers}.
+\newblock 1999.
+
+\bibitem{Kai}
+K.~Hwang, {\em Computer Arithmetic}.
+
+\bibitem{xst}
+Xilinx, {\em XST User Guide}.
+\newblock 2008.
+
+\end{thebibliography}

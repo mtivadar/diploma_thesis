@@ -1,0 +1,232 @@
+\documentclass[12pt,twoside,a4paper,fleqn]{book}
+\usepackage[top=2.5cm, bottom=2.5cm, left=3.5cm, right=3.5cm]{geometry}
+\usepackage[utf8x]{inputenc}
+\usepackage{textcomp}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{ucs}
+\usepackage[romanian]{babel}
+\usepackage{epsfig}
+\usepackage{graphicx} 
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{fancyhdr}
+
+
+\floatstyle{ruled}
+\newfloat{fragmentsursa}{htbp}{loa}[chapter]
+\floatname{fragmentsursa}{Fragment sursă}
+
+
+\floatstyle{ruled}
+\newfloat{pseudocod}{htbp}{loa}[chapter]
+\floatname{pseudocod}{Pseudocod}
+
+\theoremstyle{definition}
+\newtheorem{definitie}{Definiția}
+
+\begin{document}
+\chapter{Fundamente teoretice}
+
+\section{Arbori AND-OR}
+Un arbore AND-OR poate să conțină trei tipuri de noduri: noduri \emph{terminale}, noduri \emph{AND} și noduri \emph{OR} \cite{Giumale}. Un nod \emph{OR} reprezintă o decizie luată de cel ce rezolvă problema, alegerea fiind făcută după o anumită logică, cu scopul de a avansa în spațiul stărilor.\\
+Un nod \emph{AND} reprezintă anumite evenimente ce sunt independente în raport cu cel care rezolvă problema. Grafic se deosebește un nod \emph{AND} de un nod \emph{OR} prin marcarea arcelor ce ies din nod cu un arc de cerc.
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics*[scale = 0.4]{and-or-tree.eps}
+\caption{\small{Exemplu arbore AND-OR.}}
+\label{fig:and_or_tree}
+\end{center}
+\end{figure}
+
+Un nod terminal este fie un nod \emph{soluție}, fie un nod \emph{eșec}. Un nod soluție reprezintă o rezolvare posibilă a problei, iar un nod eșec reprezintă un nod în care problema nu e rezolvabilă. Nodurile AND și OR au succesori, iar nodurile terminale sunt noduri frunză, fără succesori.\\
+Soluția unei probleme al cărei spațiu de stări este un arbore AND-OR, nu este un simplu nod soluție ci este un lanț AND-OR din arbore. Soluția problemei și un nod asociat unei stări soluție, sunt concepte diferite \cite{Giumale}. O soluție este o strategie de rezolvare a problemei, strategie care arată metoda de rezolvare a problemei în prezența unor factori independenți de rezolvator. Arborele poate fi construit înaintea începerii rezolvării problemei, dar soluția va fi determinată în momentul explorării lui.\\
+Pentru explorare, există diferite strategii, arborelee AND-OR oferă doar o reprezentare a stărilor problemei.
+
+\section{Arbori de joc}
+În teoria jocurilor combinatorială, un arbore de joc este un arbore AND-OR, unde nodurile sunt stări ale jocului iar  arcele sunt mutări posibile dintr-o stare în alta. Arborele complet este format din poziția inițială, fiind rădăcina arborelui și toate stările posibile ale jocului, reprezentate prin noduri. Nodurile frunză vor reprezenta sfârșiturile posibile ale jocului.\\
+Arborii de joc sunt un concept important în AI, pentru că o metodă de a alege cea mai bună mutare este de a căută în spațiul stărilor, adică în arbore. Pentru jocuri triviale precum „X și 0” căutarea se poate face cu resurse rezonabile și timp rezonabil, dar când e vorba de un joc mai complex precum Reversi sau Șah, căutarea este imposibilă în timp rezonabil. Pentru astfel de jocuri, apare conceptul de arbore de joc parțial, care va avea atâtea niveluri încât căutarea să se încadreze într-o limită de timp. În afară de jocurile patologice \cite{pathological} care se pare că sunt rare, căutarea mai adâncă în arbore va genera un rezultat mai bun.
+
+\section{Numerotarea nodurilor}
+O posibilă numerotare a arborilor este descrisă în \ref{sheng_hsu} și se numește sistemul decimal Dewey.
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics*[scale = 0.4]{dewey.eps}
+\caption{\small{Numerotare Dewey.}}
+\label{fig:and_or_tree}
+\end{center}
+\end{figure}
+
+De la rădăcină, nodurile într-un arbore de căutare se notează cu o secvență de întregi de forma $a.b.c\cdots$. Rădăcina este considerată o secvență goală, iar în rest, pentru orice nod, pornind de la rădăcină se vor lua pe rând ramurile $a$, apoi de la nivelul următor $b$, apoi $c$, etc.
+
+
+\section{Metode de rezolvare a jocurilor}
+Aici voi prezenta diferite metode de rezolvare a jocurilor la care mă refer în această lucrare, adică jocuri cu informație perfectă cu doi jucători și sumă-zero.
+\subsection{Metode bazate pe forță brută}
+Metodele bazate pe forță brută sunt cele mai folosite în rezolvarea jocurilor. Motivul este că această metodă este singura care poate alege cea mai bună mutare la un moment dat, având în vedere că nu se cunoaște un model matematic pentru joc. Cele mai multe rezolvatoare de jocuri folosesc metode precum $\alpha-\beta$ sau metode îmbunătățite într-un fel sau altul.
+
+\subsubsection{Analiza retrogradă}
+Analiza retrogradă\footnote{În engl. retrograde analysis.} este o metodă în care pentru orice poziție a unui joc specific, sau unui joc din partea de sfârșit \footnote{În engl. end-game.}, numărul de mutări până la cel mai bun câștig posibil, este memorat \cite{herik}. De exemplu în jocul de șah, dintr-o anumită poziție, mutările care le va face primul jucător luând în vedere joc perfect din partea adversarului, sunt memorate. Se construiește o bază de date pornind de la nodurile terminale și mergând înapoi în arbore.\\
+După ce baza de date a fost construită, jocul perfect este garantat. Jucătorul MAX va alege mutările cu cel mai scurt drum spre o poziție de mat, iar jucătorul MIN va alege mutările cu drumul cel mai lung spre mat. În ziua de azi această tehnică este des folosită în partea de \emph{end-game} \cite{herik}. De exemplu, pentru jocul Șah, au fost analizate toate posibilitățile din \emph{end-game} cu maxim $6$ piese de joc pe tablă. Un exemplu extrem, arată că cea mai lungă poziție care în final duce la mat, dacă amândoi jucători joacă perfect, necesită $262$ de mutări \cite{herik}. Acest exemplu a arătat că cel mai complicat lucru nu este de a genera aceste poziții, ci de a le înțelege și de a extrage din ele anumite reguli, informații ce să poată apoi fi asimilate de creierul uman.
+
+\subsection{Metode bazate pe bază de cunoștiințe}
+Ca o adăugare la metodele bazate pe forță brută, este de multe ori benefică incorporarea unei metode de rezolvare care implică o bază de cunoștiințe. Principalul lor avantaj este de a oferi o ordonare a mutărilor ce urmează a fi explorate \cite{herik}.
+
+
+\section{Explorarea MINMAX}
+Algoritmii de explorare a grafurilor (în cazul particular, al arborilor) au o variantă particulară numită explorare MINMAX pentru navigarea în spațiul stărilor a jocurilor prezentate. Algoritmul fiind enunțat prima dată de către John von Neumann, a fost folosit în forma actuală de către Turing în 1950, și Shannon \cite{shannon}. Cei doi jucători sunt numiți convențional \emph{MIN} și \emph{MAX}. Jucătorul MIN încearcă să minimizeze câștigul lui MAX, adică să-i maximizeze pierderea, iar jucătorul MAX va încerca să-și maximizeze câștigul, adică să-și minimizeze pierderea. Fiind vorba de jocuri cu sumă zero, înseamnă că MAX maximizându-și câștigul, va maximiza și pierderea lui MIN, rolul se inversează pentru MIN. Scopul algoritmului este de a determina cea mai bună mutare ce poate fi efectuată de jucătorul MAX în starea curentă a jocului. Amândoi jucători sunt considerați raționali (vezi \ref{rational}) și vor juca perfect. Orice abatere a lui MIN de la jocul perfect, este în câștigul lui MAX și orice abatere de la jocul perfect a lui MAX, este în favoarea lui MIN.\\
+Spațiul stărilor jocului este un arbore AND-OR numit și arbore MIN-MAX, sau cel mai comun, arbore de joc. Nodul rădăcină este considerat nod MAX, deci toate nodurile OR sunt considerate noduri MAX și toate nodurile AND sunt considerate noduri MIN. Rădăcina $P$ este considerată problema lui MAX, rezolvarea ei înseamnă rezolvarea problemei lui MAX, adică de a găsi cea mai bună mutare. Nodurile terminale desemnează câștigul (eventual pierderea)\footnote{Mai corect spus: utilitatea.} lui MAX. Arcele ce ies din noduri reprezintă mutări posibile, MAX va încerca să găsească o strategie ca să ajungă într-un nod terminal cu câștig maxim, iar MIN contrariul lui MAX. Dacă spațiul stărilor poate fi parcurs în totalitate, atunci strategia este completă \cite{giumale}. Dacă spațiul stărilor este prea mare, atunci arborele este explorat până la o adâncime limitată, pornind de la nodul MAX curent, va rezulta o strategie incompletă formată doar din câteva mutări în avans. Nodurile devenite terminale prin limitarea căutării, vor fi considerate ca fiind noduri finale, iar un evaluator va spune care dintre jucători este în câștig. În acest caz, bineînțeles, rezultatul jocului este incert, nu se mai poate vorbi de un joc perfect din partea lui MAX decât în cazul în care estimarea scorului este perfectă. Rezultatul va depinde deci de jocul lui MIN.
+La începutul unui joc, problema $P$ este starea inițială a jocului, iar pe parcursul lui, problema $P$ devine starea curentă a jocului. Mutările sunt irevocabile, putem spune deci că din punctul de vedere al algoritmului MINMAX, este neimportant ce s-a întâmplat în trecut.\\
+Valoarea minmax a unui nod a fost enunțată de către David McAllester în felul următor \cite{mcallester}:
+\begin{definitie}
+Valoarea minmax pentru nodul de pe nivelul $0$ este definit ca fiind o valoare statică a acelui nod. Valoarea minmax de pe nivelul $d$ a unui nod max, este maximul dintre valorile de pe nivelul $d-1$ a fiilor lui. Valoarea minmax de pe nivelul $d$ a unui nod min, este minimul dintre valorile de pe nivelul $d-1$ a fiilor lui.
+\end{definitie}
+
+\begin{pseudocod}
+funcție MINMAX($s$, adâncime)\\
+\{\\
+....returnează MAX($s$, adâncime)\\
+\}\\
+\\
+funcție MAX($s$, adâncime)\\
+\{\\
+....Dacă $succ(s) = \{\emptyset\}$ SAU adâncime = $0$:\\
+........returnează valoarea lui $s$\\
+
+....v = $-\infty$\\
+....pentru\_fiecare nod $\in$ $succ(s)$:\\
+........v := max(v, MIN($nod$, adâncime - 1))\\
+....returnează v\\
+\}\\
+
+funcție MIN($s$, adâncime)\\
+\{\\
+....Dacă $succ(s) = \{\emptyset\}$ SAU adâncime = $0$:\\
+........returnează valoarea lui $s$\\
+
+....v = $\infty$\\
+....pentru\_fiecare nod $\in$ $succ(s)$:\\
+........v := min(v, MAX($nod$, adâncime - 1))\\
+....returnează v\\
+\}
+
+
+\caption{Algoritmul MINMAX}
+\end{pseudocod}
+
+Algoritmul are complexitatea exponențială $O(b^{d})$ în raport cu înălțimea $d$ a arborelui MINMAX și cu numărul $b$ de arce ce ies din noduri, fiind inutilizabil pentru un număr mare de stări \cite{Allis, Giumale, Herik, Rivest}. Ca o metodă de compromis, se poate limita adâncimea de explorare, adică pe $d$ și folosirea unei funcții euristice $h$ pentru evaluarea nodurilor neexpandate. Bineînțeles, dacă euristica $h$ nu este perfectă, atunci algoritmul nu va fi optim.\\
+Este posibil, ca o mutare mai puțin bună a lui MAX să poată duce într-o stare viitoare dincolo de orizontul de explorare, fiind o stare de unde jucătorul MAX nu va mai avea scăpare. Acest fenomen este denumit „efect de orizont” \cite{giumale} și nu are încă soluție.
+\subsubsection{Jocurile cu șansă}
+Un caz aparte, este cel al jocurilor cu șansă. Și aceste jocuri se pot transpune într-un arbore de joc, unde sunt adăugate noduri suplimentare, numite noduri șansă \cite{giumale}. Nodurile șansă au o probabilitate și corespund momentului aruncării zarului de exemplu. Fiecare nod șansă va avea o probabilitate, ce reprezintă probabilitatea ca acea combinație de zaruri să se nimerească. Evident, algoritmul de explorare nu poate garanta optimalitatea soluției într-un joc bazat pe șansă \cite{giumale}.
+% aici ar fi PN search
+% dar mie mi se pare că toate astea merg acolo unde e vorba de optimizare
+%\subsubsection{Tabele de transpoziție}
+
+
+\section{Tăiere $\alpha \beta$}
+Algoritmul $\alpha-\beta$ a fost descoperit individual de mai multe persoane \cite{brokington}. Donald Knuth și Ronald W. Moore au rafinat algoritmul în anul $1975$ enunțând și demonstrația lui.\\
+Minmax este un algoritm de forță brută, nici o optimizare nu se face asupra căutării. Complexitatea lui fiind exponențială, îl face de nefolosit în forma actuală. Exponentul $d$ nu e tocmai mic în jocuri, $58$ pentru Reversi (vezi \ref{capitol_complexitate}). O optimizare evidentă ar fi să nu explorăm toate ramurile, dar cum se va face selecția? S-a observat că anumite noduri nu contribuie la valoarea minmax a problemei, deci nu au de ce să fie explorate. Algoritmul $\alpha-\beta$ face parte din algoritmii de tip \emph{branch-and-bound}. Sunt folosite două limite în procesul de căutare, $\alpha$ și $\beta$, ele fiind transmise în arbore în momentul explorării lui în adâncime. Perechea $\alpha-\beta$ se mai numește și fereastră de căutare, pentru că în orice nod, $\alpha$ reprezintă cea mai mică valoare ce poate afecta valoarea minmax deasupra nodului curent în arbore, iar $\beta$ reprezintă cea mai mare valoare ce poate afecta valoarea minmax. Algoritmul $\alpha-\beta$ se folosește de nodurile explorate pentru a decide tăierea altor noduri. Dacă de exemplu știm sigur că valoarea determinată până acum este mai mult de $10$, iar căutarea curentă a unei ramuri până acum arată ca poate returna un scor de cel mult $9$, atunci nu mai este nici un motiv pentru a continua căutarea pe acea ramură.
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics*[scale = 0.4]{alpha_cutoff.eps}
+\caption{\small{Tăiere $\alpha$.}}
+\label{fig:alpha_cutoff}
+\end{center}
+\end{figure}
+
+Presupunem (exemplificare în figura \ref{fig:alpha_cutoff}) că prima ramură a fost deja explorată, iar valoarea nodului $1$ este $15$. Reamintim că la rădăcina arborelui este jucătorul MAX, care va maximiza câștigul. Înseamnă că pentru a se schimba valoarea nodului rădăcină, va trebui ca valoarea nodului de pe ramura următoare să fie mai mare decât valoarea nodului $1$, adică $15$. Vom explora în continuare nodul $2$, pentru că încă nu cunoaștem suficient din arbore. Presupunem că nodul $2.1$ returnează o valoare $< limita$, să zicem $10$. Nu este nevoie să evaluăm în continuare alt nod succesor nodului doi. Motivul, este că acum ne aflăm la un nivel MIN, unde se va minimiza câștigul, deci cea mai bună alegere a jucătorului MIN până în acest moment este $10$, iar o valoare mai bună pentru el trebuie să fie mai mică ca $10$. Dar cea mai buna valoare posibilă pentru nodul $2$ este $< limita$, deci nici nod succesor a lui $2$ nu va putea schimba valoarea minmax pentru rădăcină. Deci, în continuare pentru a explora nodul $3$, se va considera prima ramură ca fiind cea mai bună soluție.\\
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics*[scale = 0.4]{beta_cutoff.eps}
+\caption{\small{Tăiere $\beta$.}}
+\label{fig:beta_cutoff}
+\end{center}
+\end{figure}
+
+În cazul unui nod MIN, avem (figura \ref{fig:beta_cutoff}). Presupunem că s-a explorat nodul $1.1$ a nodului MIN $1$ și s-a obținut cea mai bună valoare, $10$ ca și limită. Algoritmul va explora în continuare nodul $1.2$ și presupunem că nodul $1.2.1$ va returna o valoare $ > limita$, de exemplu $15$. Nu mai este nevoie să explorăm nodul $1.2.2$ și nici orice alt nod care ar mai exista ca descendent a lui $1.2$, pentru că deja cea mai bună valoare a lui $1.2$ este $15$ care e $> limita$. Prin urmare, vom lua prima ramură ca fiind cea mai bună soluție curentă \cite{sheng_hsu}. În timpul căutării, pentru un nod MAX, valoarea curentă cea mai bună este cel puțin $\alpha$, iar 
+pentru un nod MIN, valoarea curentă cea mai bună este cel puțin $\beta$.
+
+O enunțare a algoritmului $\alpha-\beta$, o adaptare după \cite{dana_nau_game_tree_search_}.
+\begin{pseudocod}
+funcție MINMAX$\alpha \beta$($s$, adâncime, $\alpha$, $\beta$)\\
+\{\\
+....returnează MAX($s$, adâncime, $\alpha$, $\beta$)\\
+\}\\
+\\
+funcție MAX($s$, adâncime, $\alpha$, $\beta$)\\
+\{\\
+....Dacă $succ(s) = \{\emptyset\}$ SAU adâncime = $0$:\\
+........returnează valoarea lui $s$\\
+
+....v = $-\infty$\\
+....pentru\_fiecare nod $\in$ $succ(s)$:\\
+........v := max(v, MIN($nod$, adâncime - 1, $\alpha$, $\beta$))\\
+........Dacă $v \geq \beta$:\\
+............returnează v\\
+........$\alpha$ := max($\alpha$, v)\\
+....returnează v\\
+\}\\
+
+funcție MIN($s$, adâncime, $\alpha$, $\beta$)\\
+\{\\
+.... La fel ca la MAX, dar cu rolurile $\alpha$, $\beta$ inversate.\\
+\}
+
+
+\caption{Algoritmul MINMAX cu $\alpha \beta$}
+\end{pseudocod}
+
+Folosind tehnicile descrise, tăierea $\alpha - \beta$ poate fi folosită pentru a computa valoarea minmax a unui arbore de joc într-un timp $O(\sqrt{b^{d}})$ față de $O(b^{d})$ cât e la minmax. Diferența este foarte mare, având în vedere că de exemplu la Reversi, factorul $d = 58$. Un alt mod de a privi \cite{mcAllstar}, este că algoritmul $\alpha - \beta$ permite o explorare a unui număr dublu de noduri în față de minmax.\\
+Algoritmul este corect în momentul în care se pornește explorarea cu fereastra $(\alpha = -\infty, \beta = \infty)$. 
+Domonstrația corectitudinii algoritmului, putem găsi în \cite{giumale, mcallstar, sheng_hsu}.\\
+Se observă că același arbore, dar cu ordonări diferite ale tăierii $\alpha - \beta$. In cazuri diferite de ordonare, se vor explora un număr diferit de noduri pentru a calcula valoarea minmax. Se crede că dacă pornind de la un nod, se vor explora mai întâi ramurile cu cea mai bună \emph{utilitate}, atunci și numărul de tăieri va fi maxim, deci explorarea ar dura mai puțin. Asta ar însemna ca pentru un nod MAX să evaluăm prima dată ramura cu valoarea cea mai mare, iar într-un nod MIN, să evaluăm mai întâi ramura cu valoarea cea mai mică.\\
+În \cite{sheng_hsu}, avem o analiză pentru cazul optim de ordonare a arborelui pentru a atinge limita de $\sqrt{b^{d}}$. Tot în \cite{sheng_hsu}, se ajunge la concluzia că ordonarea perfectă (adică ordonare după utilitatea fiecărui nod) nu e neaparat cea mai bună, cum s-ar crede intuitiv, iar $\alpha - \beta$ ar avea un timp optim pentru o permutare a arborelui, care nu e chiar evidentă.\\
+Complexitatea algoritmului este deci $\Omega(\sqrt{b^{d}})$, având în vedere că limita este atinsă doar în cazul unei ordonări optime.\\
+În cazul în care arborele de joc ar fi o orodnat aleator, complexitatea explorării $\alpha - \beta$ ar fi 
+$\Theta((\frac{b}{log_{2}b})^{d})$ pentru $b > 1000$, iar pentru valori moderate ale lui $b$, complexitatea este $O(b^{\frac{3 \cdot d}{4}})$, ceea ce permite mărirea cu $25\%$ a adâncimii de explorare față de algoritmul MINMAX, la același număr de noduri explorate \cite{giumale}.
+\label{sec_ordering}
+
+\section{Îmbunătățiri ale algoritmului $\alpha \beta$}
+Cu toate că $\alpha \beta$ oferă un timp de explorare mult îmbunătățit față de MINMAX și prin asta devenind algoritmul standard de explorare în spațiul stărilor, un timp de explorare $b^{\frac{d}{2}}$ nu este suficient. În \ref{sec_ordering} am discutat despre importanța ordonării mutărilor înainte de explorare. S-au dezvoltat o serie de algoritmi bazați pe această observație, vom descrie pe scurt câțiva.
+\subsection{Adâncire iterativă}
+Idea acestui algoritm\footnote{În engl. iterative deeping.} este de a explora la o adâncime $k$ înainte de a explora la o adâncime $d$, unde $k < d$. Dupa ce s-a atins nivelul $k$, se forțează o evaluare a sțarilor obținute, după care se reia o explorare până la nivelul $k+s$. În practică, de cele mai multe ori, valorile $k$ și $s$ sunt egale cu $1$. Astfel, se va explora doar un nivel, după care se va explora $2$ niveluri, etc. Motivul, este de a folosi informația acumulată la explorarea până la nivelul $k$, pentru a genera o bună ordonare a mutărilor înainte de a explora la nivelul $k+1$. Astfel, s-a arătat în practică \cite{brokington} că se va genera un arbore puternic-ordonat, deci algoritmul $\alpha \beta$ va tinde spre optim. Metoda are avantaje și în competiții, unde timpul de gândire pentru o mutare este fix. Din moment ce nu se poate prezice când se va opri algoritmul $\alpha \beta$, ar putea rezulta o mutare catastrofică. Cu o adâncire iterativă, avem tot timpul rezultatul de la pasul anterior, care poate fi luat în considerare în cazul în care timpul a expirat iar explorarea până la nivelul $d$ nu s-a terminat. În practică, numărul de noduri explorate la adâncimea $d$, folosind această tehnică, este semnificativ mai mic comparat cu o explorare standard până la nivelul $d$.\\
+Dacă euristica construită va fluctua puțin la diferențe mici de adâncire, atunci într-o explorare iterativă, am putea îngusta fereastra de căutare, din nou optimizând algoritmul.
+\subsection{Tehnici bazate pe ordonarea mutărilor}
+
+\subsubsection{Ordonarea statică}
+Prima metodă de ordonare a mutărilor pentru a obține o îmbunătațire a algoritmului $\alpha \beta$ presupune ordonarea lor după valoarea nodurilor succesoare. Nodul care a generat valoarea cea mai mare este explorat primul, iar nodul care a generat valoarea cea mai mică, este pus la coadă. De exemplu în Reversi, implementat și în FPGA, am putea considera o ordonare bună mutările în care se adaugă un disc în colț, pentru că devine stabil\footnote{Metodă cunoscută sub numele de \emph{killer response}.}. Ordonarea statică a funcționat bine \cite{brokington} pentru anumite jocuri, chiar și Othello, dar nu a funcționat bine în Șah. Problema este că metoda este statică și nu se folosește de informațiile adunate pe parcurs.
+
+\subsubsection{Tabele de transpoziție}
+Informații specifice pentru o căutare ar putea fi salvate în tabele de transpoziție. În algoritmul $\alpha \beta$ avem diferite informații despre un nod, precum cel mai bun scor, cea mai bună mutare de la acea poziție, adâncimea la care a fost căutat. Toate aceste informații ar putea fi memorate în tabele de transpoziție. Aceste tabele sunt în mod normal implementate ca tabele \emph{hash}, cu funcții de \emph{hash} ușor de implementat. Dimensiunea tabelei se poate alege după resursele disponibile. Acest tip de tabele pot fi apoi folosite pentru a ordona mutările sau a găsi duplicate de stări de joc \cite{brokington}. În timpul jocului, o anumită stare de joc poate fi întâlnită prin selectarea mai multor strategii diferite. Astfel de poziții sunt și în Reversi. În acest joc, precum și în șah, s-ar putea exploata si mai mult, pentru că putem avea simetrii pe tabla de joc. Având tabela de transpoziție, putem căuta acea stare de joc în tabelă într-un timp $O(1)$. Dacă este găsită, atunci înseamnă că știm și valoarea minmax a acelui nod și nu mai avem motiv să continuăm explorarea.\\
+Un mod de folosință și mai bun pentru aceste tabele, este în momentul în care se folosesc împreună cu o explorare iterativă. De obicei, rezultatul funcțiilor euristice de evaluare a stărilor de joc vor varia puțin de la nivelul $k$ la nivelul $k+1$. Putem deci să pornim o explorare la nivelul $k+1$ folosind informația de la nivelul $k$. In tabelă, la indexul dat de nodul respectiv\footnote{De fapt e indexul dat de funcția de \emph{hash} aplicată nodului.} se va afla mutarea cea mai bună. Astfel, o vom considera ca cea mai bună ordonare și explorarea va porni cu acea ramură.
+
+\subsection{Fereastră de căutare nulă}
+O îmbunătățire a algoritmului $\alpha \beta$ s-a arătat că se poate obține folosindu-ne de o căutare la o adâncime mai mică decât $d$. Dacă avem și o bună ordonare a mutărilor, atunci explorarea se va apropia și mai mult de cazul optim. Având în vedere că primul nod explorat e considerat ca fiind cel mai bun, înseamnă că restul le considerăm inferioare. Metoda ferestrei nule\footnote{În engl. \emph{null window.}} se folosește de această presupunere. Presupunem că valoarea minmax obținută pentru prima mutare este \emph{gamma}. În mod normal ar urma o explorare a nodului următor cu fereastra (\emph{gamma}, beta). Dar cum prima mutare e considerată cea mai bună, algoritmul ferestrei nule va porni explorarea nodului următor cu fereastra (\emph{gamma}, \emph{gamma+1}). Dacă mutarea este într-adevăr inferioară, atunci rezultatul va cel mult egal cu \emph{gamma} și nu mai trebuie făcut nimic. Dacă valoarea returnată va fi mai mare ca și \emph{gamma}, atunci înseamnă ca mutarea e superioară și se va explora din nou cu o fereastră mai mare.\\
+Bineînțeles, acest algoritm va da rezultate bune doar dacă avem o bună ordonare a mutărilor \cite{brokington}. \emph{NegaScout} este un algoritm ce folosește căutare cu fereastră nulă pentru a demonstra dacă mutarea care e testată este mai bună decât cea care a fost deja aleasă la o căutare normală. În practică, algoritmul NegaScout obține pentru jocul Șah, un plus de performanță de $10\%$ față de o căutare cu fereastra completă.
+
+\subsection{Căutare selectivă}
+Am văzut cum un algoritm va căuta exhaustiv în spațiul stărilor pentru a determina o mutare bună. Dar se pune problema, cum sunt capabili oamenii de un joc bun? Bineînțeles, campionii de Reversi nu vor analiza toate mutările precum face un algoritm, fie el cu $\alpha \beta$. Răspunsul ar fi că mintea umană este cel mai bun evaluator existent și are capacitatea de a tăia anumite ramuri din arborele de joc fără a fi măcar explorate. Algoritmii prezentați până acum sunt corecți, valoarea determinată de ei poate fi demonstrată și nu poate fi alta.\footnote{Dacă considerăm un evaluator perfect.}\\
+Algoritmul \emph{Multi-ProbeCut} \cite{buro_mpc_curs, buro_mpc} încearcă să facă exact acest lucru, de a tăia anumite ramuri înainte de a fi explorate. Diferența mare, este că $\alpha \beta$ standard va tăia ramuri după ce a explorat și a văzut că poate să facă acest lucru. MPC\footnote{Multi-ProbeCut.} va tăia ramuri înainte de a fi explorate. Procesul este probabilistic, un nod nu va mai fi explorat dacă probabilitatea de a fi o mutare proastă este suficient de mare. Ca mod de folosire, se va defini o adâncime $d' < d$ care este adâncimea la care se va face tăierea. Până la $d'$, algoritmul va face o explorare $\alpha \beta$ obișnuită. Obținând valoarea minmax $v$ pentru un nod, se va estima care ar putea fi valoarea $v'$ dacă nodul ar fi explorat până la adâncimea $d$. Dacă valoarea estimată $v$ pare o mutare proastă, atunci explorarea va înceta.\\
+Această metodă presupune existența unui evaluator foarte bun, care să fie cât de cât uniform, să nu varieze brusc. Valorile $d'$ și $d$ se determină cel mai bine în practică. Rezultate bune se obțin și dacă se fac explorări selective multiple, de exemplu $d', d'', d$.\\
+Pentru jocul Othello, MPC are rezultate remarcabile \cite{buro_mpc}. Algoritmul implementat cu MPC de către Michael Buro, a folosit doar $4\%$ din timpul aceluiași algoritm fără MPC, amândoi fiind la fel de puternici. Dacă implementarea cu MPC este lăsată să exploreze un timp comparativ cu cel al implementării fără MPC, atunci cel fără MPC va câștiga aproximativ $78\%$ din partide, pentru că va putea explora mai adânc.
+
+\tableofcontents
+\end{document}
+
+
+
+
+%funcție MINMAX($s$, adâncime)\\
+%\{\\
+%\ident Dacă $s$ e nod terminal SAU adâncime = $0$:\\
+%\ident \ident returnează valoarea lui $s$\\
+%\ident altfel\\
+%pentru_fiecare nod aparține lui $s$:\\
+%a = max(a, MINMAX($nod$, adâncime - 1))\\
+%returnează a\\
+%\}
